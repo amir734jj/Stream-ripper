@@ -1,0 +1,59 @@
+﻿{
+  "version": "1.0.0",
+  "restore": {
+    "projectUniqueName": "/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper.Tests/Stream-ripper.Tests.csproj",
+    "projectName": "Stream-ripper.Tests",
+    "projectPath": "/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper.Tests/Stream-ripper.Tests.csproj",
+    "outputPath": "/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper.Tests/obj/",
+    "projectStyle": "PackageReference",
+    "fallbackFolders": [
+      "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
+    ],
+    "originalTargetFrameworks": [
+      "netcoreapp2.1"
+    ],
+    "frameworks": {
+      "netcoreapp2.1": {
+        "projectReferences": {
+          "/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper/Stream-ripper.csproj": {
+            "projectPath": "/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper/Stream-ripper.csproj"
+          }
+        }
+      }
+    },
+    "warningProperties": {
+      "warnAsError": [
+        "NU1605"
+      ]
+    }
+  },
+  "frameworks": {
+    "netcoreapp2.1": {
+      "dependencies": {
+        "Microsoft.NET.Test.Sdk": {
+          "target": "Package",
+          "version": "[15.7.0, )"
+        },
+        "Microsoft.NETCore.App": {
+          "suppressParent": "All",
+          "target": "Package",
+          "version": "[2.1.0, )",
+          "autoReferenced": true
+        },
+        "xunit": {
+          "target": "Package",
+          "version": "[2.3.1, )"
+        },
+        "xunit.runner.visualstudio": {
+          "target": "Package",
+          "version": "[2.3.1, )"
+        }
+      },
+      "imports": [
+        "net461"
+      ],
+      "assetTargetFallback": true,
+      "warn": true
+    }
+  }
+}

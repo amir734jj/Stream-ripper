@@ -1,0 +1,9 @@
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper/bin/Debug/netcoreapp2.1/StreamRipper.deps.json
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper/bin/Debug/netcoreapp2.1/StreamRipper.dll
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper/bin/Debug/netcoreapp2.1/StreamRipper.pdb
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper/obj/Debug/netcoreapp2.1/Stream-ripper.csprojAssemblyReference.cache
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper/obj/Debug/netcoreapp2.1/Stream-ripper.csproj.CoreCompileInputs.cache
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper/obj/Debug/netcoreapp2.1/Stream-ripper.AssemblyInfoInputs.cache
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper/obj/Debug/netcoreapp2.1/Stream-ripper.AssemblyInfo.cs
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper/obj/Debug/netcoreapp2.1/StreamRipper.dll
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper/obj/Debug/netcoreapp2.1/StreamRipper.pdb

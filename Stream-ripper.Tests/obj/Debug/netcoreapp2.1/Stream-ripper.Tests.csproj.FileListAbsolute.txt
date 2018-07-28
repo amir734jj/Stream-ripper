@@ -1,0 +1,17 @@
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper.Tests/bin/Debug/netcoreapp2.1/xunit.runner.visualstudio.dotnetcore.testadapter.dll
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper.Tests/bin/Debug/netcoreapp2.1/xunit.runner.reporters.netcoreapp10.dll
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper.Tests/bin/Debug/netcoreapp2.1/xunit.runner.utility.netcoreapp10.dll
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper.Tests/bin/Debug/netcoreapp2.1/StreamRipper.Tests.deps.json
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper.Tests/bin/Debug/netcoreapp2.1/StreamRipper.Tests.runtimeconfig.json
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper.Tests/bin/Debug/netcoreapp2.1/StreamRipper.Tests.runtimeconfig.dev.json
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper.Tests/bin/Debug/netcoreapp2.1/StreamRipper.Tests.dll
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper.Tests/bin/Debug/netcoreapp2.1/StreamRipper.Tests.pdb
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper.Tests/bin/Debug/netcoreapp2.1/StreamRipper.dll
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper.Tests/bin/Debug/netcoreapp2.1/StreamRipper.pdb
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper.Tests/obj/Debug/netcoreapp2.1/Stream-ripper.Tests.csprojAssemblyReference.cache
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper.Tests/obj/Debug/netcoreapp2.1/Stream-ripper.Tests.csproj.CoreCompileInputs.cache
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper.Tests/obj/Debug/netcoreapp2.1/Stream-ripper.Tests.AssemblyInfoInputs.cache
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper.Tests/obj/Debug/netcoreapp2.1/Stream-ripper.Tests.AssemblyInfo.cs
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper.Tests/obj/Debug/netcoreapp2.1/Stream-ripper.Tests.csproj.CopyComplete
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper.Tests/obj/Debug/netcoreapp2.1/StreamRipper.Tests.dll
+/Users/HES8493/RiderProjects/Stream-ripper/Stream-ripper.Tests/obj/Debug/netcoreapp2.1/StreamRipper.Tests.pdb
