@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using StreamRipper.Builders;
 using StreamRipper.Models;
@@ -52,11 +53,8 @@ namespace StreamRipper.Pluggins
 
             OnStreamUpdate = ActionEventHandlerBuilder<StreamUpdateEventArg>.New()
                 .SetActionHandler(onStreamUpdate)
-                // Update the bytes array
-                .AddAfterExecution(x =>
-                {
-                    // _songInfo.Bytes = (_songInfo.Bytes ?? new byte[0]).Concat(x.SongRawPartial).ToArray();
-                })
+                // Update the stream
+                .AddAfterExecution(x => _songInfo.Stream.Write(x.SongRawPartial))
                 .WrapAsync()
                 .Build();
             
@@ -64,7 +62,7 @@ namespace StreamRipper.Pluggins
                 .SetActionHandler(onStreamStarted)
                 .WrapAsync()
                 // Initialize the buffer
-                .AddAfterExecution(_ => _songInfo = new SongInfo())
+                .AddAfterExecution(_ => _songInfo = new SongInfo { Stream = new MemoryStream() })
                 .Build();
         }
     }

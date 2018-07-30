@@ -67,96 +67,99 @@ namespace StreamRipper
         /// </summary>
         private void StreamHttpRadio()
         {
-            var request = (HttpWebRequest) WebRequest.Create(_url);
-            request.Headers.Add("icy-metadata", "1");
-            request.ReadWriteTimeout = 10 * 1000;
-            request.Timeout = 10 * 1000;
-            
-            using (var response = (HttpWebResponse) request.GetResponse())
+            do
             {
-                // Trigger on stream started
-                _pluginManager.OnStreamStarted(new StreamStartedEventArg());
-                
-                // Get the position of metadata
-                var metaInt = 0;
-                if (!string.IsNullOrEmpty(response.GetResponseHeader("icy-metaint")))
-                {
-                    metaInt = Convert.ToInt32(response.GetResponseHeader("icy-metaint"));
-                }
+                var request = (HttpWebRequest) WebRequest.Create(_url);
+                request.Headers.Add("icy-metadata", "1");
+                request.ReadWriteTimeout = 10 * 1000;
+                request.Timeout = 10 * 1000;
 
-                using (var socketStream = response.GetResponseStream())
+                using (var response = (HttpWebResponse) request.GetResponse())
                 {
-                    var buffer = new byte[16384];
-                    var metadataLength = 0;
-                    var streamPosition = 0;
-                    var bufferPosition = 0;
-                    var readBytes = 0;
-                    var metadataSb = new StringBuilder();
+                    // Trigger on stream started
+                    _pluginManager.OnStreamStarted(new StreamStartedEventArg());
 
-                    while (_running)
+                    // Get the position of metadata
+                    var metaInt = 0;
+                    if (!string.IsNullOrEmpty(response.GetResponseHeader("icy-metaint")))
                     {
-                        if (bufferPosition >= readBytes)
-                        {
-                            if (socketStream != null) readBytes = socketStream.Read(buffer, 0, buffer.Length);
-                            bufferPosition = 0;
-                        }
+                        metaInt = Convert.ToInt32(response.GetResponseHeader("icy-metaint"));
+                    }
 
-                        if (readBytes <= 0)
-                        {
-                            break;
-                        }
+                    using (var socketStream = response.GetResponseStream())
+                    {
+                        var buffer = new byte[16384];
+                        var metadataLength = 0;
+                        var streamPosition = 0;
+                        var bufferPosition = 0;
+                        var readBytes = 0;
+                        var metadataSb = new StringBuilder();
 
-                        if (metadataLength == 0)
+                        while (_running)
                         {
-                            if (metaInt == 0 || streamPosition + readBytes - bufferPosition <= metaInt)
+                            if (bufferPosition >= readBytes)
                             {
-                                streamPosition += readBytes - bufferPosition;
-                                ProcessStreamData(buffer, ref bufferPosition, readBytes - bufferPosition);
-                                continue;
+                                if (socketStream != null) readBytes = socketStream.Read(buffer, 0, buffer.Length);
+                                bufferPosition = 0;
                             }
 
-                            ProcessStreamData(buffer, ref bufferPosition, metaInt - streamPosition);
-                            metadataLength = Convert.ToInt32(buffer[bufferPosition++]) * 16;
-                            
-                            // Check if there's any metadata, otherwise skip to next block
-                            if (metadataLength == 0)
+                            if (readBytes <= 0)
                             {
-                                streamPosition = Math.Min(readBytes - bufferPosition, metaInt);
-                                ProcessStreamData(buffer, ref bufferPosition, streamPosition);
-                                continue;
-                            }
-                        }
-
-                        // Get the metadata and reset the position
-                        while (bufferPosition < readBytes)
-                        {
-                            metadataSb.Append(Convert.ToChar(buffer[bufferPosition++]));
-                            metadataLength--;
-                            
-                            // ReSharper disable once InvertIf
-                            if (metadataLength == 0)
-                            {
-                                var metadata = metadataSb.ToString();
-                                streamPosition = Math.Min(readBytes - bufferPosition, metaInt);
-                                ProcessStreamData(buffer, ref bufferPosition, streamPosition);
-
-                                // Trigger song change event
-                                _pluginManager.OnMetadataChanged(new MetadataChangedEventArg
-                                {
-                                    SongMetadata = new SongMetadata
-                                    {
-                                        Artist = metadata,
-                                        Title = metadata
-                                    }
-                                });
-                                
-                                metadataSb.Clear();
                                 break;
+                            }
+
+                            if (metadataLength == 0)
+                            {
+                                if (metaInt == 0 || streamPosition + readBytes - bufferPosition <= metaInt)
+                                {
+                                    streamPosition += readBytes - bufferPosition;
+                                    ProcessStreamData(buffer, ref bufferPosition, readBytes - bufferPosition);
+                                    continue;
+                                }
+
+                                ProcessStreamData(buffer, ref bufferPosition, metaInt - streamPosition);
+                                metadataLength = Convert.ToInt32(buffer[bufferPosition++]) * 16;
+
+                                // Check if there's any metadata, otherwise skip to next block
+                                if (metadataLength == 0)
+                                {
+                                    streamPosition = Math.Min(readBytes - bufferPosition, metaInt);
+                                    ProcessStreamData(buffer, ref bufferPosition, streamPosition);
+                                    continue;
+                                }
+                            }
+
+                            // Get the metadata and reset the position
+                            while (bufferPosition < readBytes)
+                            {
+                                metadataSb.Append(Convert.ToChar(buffer[bufferPosition++]));
+                                metadataLength--;
+
+                                // ReSharper disable once InvertIf
+                                if (metadataLength == 0)
+                                {
+                                    var metadata = metadataSb.ToString();
+                                    streamPosition = Math.Min(readBytes - bufferPosition, metaInt);
+                                    ProcessStreamData(buffer, ref bufferPosition, streamPosition);
+
+                                    // Trigger song change event
+                                    _pluginManager.OnMetadataChanged(new MetadataChangedEventArg
+                                    {
+                                        SongMetadata = new SongMetadata
+                                        {
+                                            Artist = metadata,
+                                            Title = metadata
+                                        }
+                                    });
+
+                                    metadataSb.Clear();
+                                    break;
+                                }
                             }
                         }
                     }
                 }
-            }
+            } while (_running);
         }
 
         private void ProcessStreamData(byte[] buffer, ref int offset, int length)
