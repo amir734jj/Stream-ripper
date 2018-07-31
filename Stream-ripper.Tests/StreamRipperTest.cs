@@ -33,7 +33,7 @@ namespace StreamRipper.Tests
             streamRipper.Start();
             
             // Act, Assert
-            Assert.NotEmpty(songInfo.Bytes);
+            Assert.NotEmpty(songInfo.Stream.ToArray());
         }
     }
 }

@@ -37,6 +37,7 @@ namespace StreamRipper.Pluggins
             
             OnMetadataChanged = ActionEventHandlerBuilder<MetadataChangedEventArg>.New()
                 .SetActionHandler(onMetadataChanged)
+                .WrapAsync()
                 // Trigger song change event
                 .AddBeforeExecution(_ =>
                 {
@@ -48,21 +49,26 @@ namespace StreamRipper.Pluggins
                 {
                     _songInfo.SongMetadata = x.SongMetadata;
                 })
-                .WrapAsync()
                 .Build();
 
             OnStreamUpdate = ActionEventHandlerBuilder<StreamUpdateEventArg>.New()
                 .SetActionHandler(onStreamUpdate)
-                // Update the stream
-                .AddAfterExecution(x => _songInfo.Stream.Write(x.SongRawPartial))
                 .WrapAsync()
+                // Update the stream
+                .AddAfterExecution(x =>
+                {
+                    _songInfo.Stream.Write(x.SongRawPartial);
+                })
                 .Build();
             
             OnStreamStarted = ActionEventHandlerBuilder<StreamStartedEventArg>.New()
                 .SetActionHandler(onStreamStarted)
                 .WrapAsync()
                 // Initialize the buffer
-                .AddAfterExecution(_ => _songInfo = new SongInfo { Stream = new MemoryStream() })
+                .AddAfterExecution(_ =>
+                {
+                    _songInfo = new SongInfo {Stream = new MemoryStream()};
+                })
                 .Build();
         }
     }
