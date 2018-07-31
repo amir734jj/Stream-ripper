@@ -57,7 +57,7 @@ namespace StreamRipper.Pluggins
                 // Update the stream
                 .AddAfterExecution(x =>
                 {
-                    _songInfo.Stream.Write(x.SongRawPartial);
+                    _songInfo.Stream.Write(x.SongRawPartial, 0, x.SongRawPartial.Length);
                 })
                 .Build();
             
