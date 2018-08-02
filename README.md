@@ -11,7 +11,7 @@ SongInfo songInfo = null;
 
 StreamRipper streamRipper = null;
 
-streamRipper = new StreamRipper("https://rj1.rjstream.com/",
+streamRipper = new StreamRipper(new Uri("https://rj1.rjstream.com/"),
     PlugginManagerBuilder
         .New()
         .SetOnSongChanged(x =>
