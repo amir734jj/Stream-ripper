@@ -1,7 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <RootNamespace>StreamRipper</RootNamespace>
     <AssemblyName>StreamRipper</AssemblyName>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>Strem ripper with async event system</Description>
+    <RepositoryUrl>https://github.com/amir734jj/Stream-ripper</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/amir734jj/Stream-ripper</PackageProjectUrl>
   </PropertyGroup>
 </Project>
