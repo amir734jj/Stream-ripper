@@ -12,7 +12,7 @@ namespace StreamRipper.Builders
         
         private readonly List<Action<T>> _afterExecution = new List<Action<T>>();
         
-        private bool _async;
+        private bool _async = true;
 
         /// <summary>
         /// Wrap the action as async task
