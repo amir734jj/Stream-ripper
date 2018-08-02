@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using StreamRipper.Interfaces;
 
 namespace StreamRipper.Builders
 {
-    public class ActionEventHandlerBuilder<T>: BaseBuilder<ActionEventHandlerBuilder<T>, Action<T>>
+    public class ActionEventHandlerBuilder<T>: BaseBuilder<ActionEventHandlerBuilder<T>, Action<T>>, IActionEventHandlerBuilder<T>
     {
         private Action<T> _action;
 
@@ -19,28 +20,28 @@ namespace StreamRipper.Builders
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public ActionEventHandlerBuilder<T> WrapAsync() => Run(this, () => _async = true);
+        public IActionEventHandlerBuilder<T> WrapAsync() => Run(this, () => _async = true);
         
         /// <summary>
         /// Set the action event handler
         /// </summary>
         /// <param name="action"></param>
         /// <returns></returns>
-        public ActionEventHandlerBuilder<T> SetActionHandler(Action<T> action) => Run(this, () => _action = action);
+        public IActionEventHandlerBuilder<T> SetActionHandler(Action<T> action) => Run(this, () => _action = action);
 
         /// <summary>
         /// Add before execution
         /// </summary>
         /// <param name="action"></param>
         /// <returns></returns>
-        public ActionEventHandlerBuilder<T> AddBeforeExecution(Action<T> action) => Run(this, () => _beforeExecution.Add(action));
+        public IActionEventHandlerBuilder<T> AddBeforeExecution(Action<T> action) => Run(this, () => _beforeExecution.Add(action));
 
         /// <summary>
         /// Add after execution
         /// </summary>
         /// <param name="action"></param>
         /// <returns></returns>
-        public ActionEventHandlerBuilder<T> AddAfterExecution(Action<T> action) => Run(this, () => _afterExecution.Add(action));
+        public IActionEventHandlerBuilder<T> AddAfterExecution(Action<T> action) => Run(this, () => _afterExecution.Add(action));
         
         /// <inheritdoc />
         /// <summary>

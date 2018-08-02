@@ -2,12 +2,13 @@
 using System.IO;
 using System.Linq;
 using StreamRipper.Builders;
+using StreamRipper.Interfaces;
 using StreamRipper.Models;
 using StreamRipper.Models.Events;
 
 namespace StreamRipper.Pluggins
 {
-    public class PluginManager
+    public class PluginManager : IPluginManager
     {
         public Action<MetadataChangedEventArg> OnMetadataChanged { get; }
 
@@ -15,20 +16,23 @@ namespace StreamRipper.Pluggins
         
         public Action<StreamStartedEventArg> OnStreamStarted { get; }
         
+        public Action<StreamEndedEventArg> OnStreamEnded { get; }
+        
         public Action<SongChangedEventArg> OnSongChanged { get; }
 
         private SongInfo _songInfo;
-                
+
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="onMetadataChanged"></param>
         /// <param name="onStreamUpdate"></param>
         /// <param name="onStreamStarted"></param>
+        /// <param name="onStreamEnded"></param>
         /// <param name="onSongChanged"></param>
         public PluginManager(Action<MetadataChangedEventArg> onMetadataChanged,
             Action<StreamUpdateEventArg> onStreamUpdate, Action<StreamStartedEventArg> onStreamStarted,
-            Action<SongChangedEventArg> onSongChanged)
+            Action<StreamEndedEventArg> onStreamEnded, Action<SongChangedEventArg> onSongChanged)
         {            
             OnSongChanged = ActionEventHandlerBuilder<SongChangedEventArg>.New()
                 .SetActionHandler(onSongChanged)
@@ -71,6 +75,11 @@ namespace StreamRipper.Pluggins
                 {
                     _songInfo = new SongInfo {Stream = new MemoryStream()};
                 })
+                .Build();
+
+            OnStreamEnded = ActionEventHandlerBuilder<StreamEndedEventArg>.New()
+                .SetActionHandler(onStreamEnded)
+                .WrapAsync()
                 .Build();
         }
     }

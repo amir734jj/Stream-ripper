@@ -1,20 +1,22 @@
 ﻿using System;
+using StreamRipper.Interfaces;
 using StreamRipper.Models.Events;
 using StreamRipper.Pluggins;
 
 namespace StreamRipper.Builders
 {
-    /// <inheritdoc />
     /// <summary>
     /// Pluggin manager builder
     /// </summary>
-    public class PlugginManagerBuilder: BaseBuilder<PlugginManagerBuilder, PluginManager>
+    public class PlugginManagerBuilder: BaseBuilder<PlugginManagerBuilder, IPluginManager>, IPlugginManagerBuilder
     {        
         private Action<MetadataChangedEventArg> _onMetadataChanged;
 
         private Action<StreamUpdateEventArg> _onStreamUpdated;
 
         private Action<StreamStartedEventArg> _onStreamStarted;
+        
+        private Action<StreamEndedEventArg> _onStreamEnded;
         
         private Action<SongChangedEventArg> _onSongChanged;
 
@@ -23,7 +25,7 @@ namespace StreamRipper.Builders
         /// </summary>
         /// <param name="onCurrentSongChanged"></param>
         /// <returns></returns>
-        public PlugginManagerBuilder SetOnMetadataChanged(Action<MetadataChangedEventArg> onCurrentSongChanged) =>
+        public IPlugginManagerBuilder SetOnMetadataChanged(Action<MetadataChangedEventArg> onCurrentSongChanged) =>
             Run(this, () => _onMetadataChanged = onCurrentSongChanged);
         
         /// <summary>
@@ -31,7 +33,7 @@ namespace StreamRipper.Builders
         /// </summary>
         /// <param name="onStreamUpdated"></param>
         /// <returns></returns>
-        public PlugginManagerBuilder SetOnStreamUpdated(Action<StreamUpdateEventArg> onStreamUpdated) =>
+        public IPlugginManagerBuilder SetOnStreamUpdated(Action<StreamUpdateEventArg> onStreamUpdated) =>
             Run(this, () => _onStreamUpdated = onStreamUpdated);
         
         /// <summary>
@@ -39,15 +41,23 @@ namespace StreamRipper.Builders
         /// </summary>
         /// <param name="onStreamStarted"></param>
         /// <returns></returns>
-        public PlugginManagerBuilder SetOnStreamStarted(Action<StreamStartedEventArg> onStreamStarted) =>
+        public IPlugginManagerBuilder SetOnStreamStarted(Action<StreamStartedEventArg> onStreamStarted) =>
             Run(this, () => _onStreamStarted = onStreamStarted);
+        
+        /// <summary>
+        /// Set the on stream ended
+        /// </summary>
+        /// <param name="onStreamEnded"></param>
+        /// <returns></returns>
+        public IPlugginManagerBuilder SetOnStreamEnded(Action<StreamEndedEventArg> onStreamEnded) =>
+            Run(this, () => _onStreamEnded = onStreamEnded);
         
         /// <summary>
         /// Set the on song changed
         /// </summary>
         /// <param name="onSongChanged"></param>
         /// <returns></returns>
-        public PlugginManagerBuilder SetOnSongChanged(Action<SongChangedEventArg> onSongChanged) =>
+        public IPlugginManagerBuilder SetOnSongChanged(Action<SongChangedEventArg> onSongChanged) =>
             Run(this, () => _onSongChanged = onSongChanged);
 
         /// <inheritdoc />
@@ -60,6 +70,7 @@ namespace StreamRipper.Builders
             _onMetadataChanged = _onMetadataChanged ?? EmptyAction<MetadataChangedEventArg>();
             _onStreamUpdated = _onStreamUpdated ?? EmptyAction<StreamUpdateEventArg>();
             _onStreamStarted = _onStreamStarted ?? EmptyAction<StreamStartedEventArg>();
+            _onStreamEnded = _onStreamEnded ?? EmptyAction<StreamEndedEventArg>();
             _onSongChanged = _onSongChanged ?? EmptyAction<SongChangedEventArg>();
         }
         
@@ -68,7 +79,7 @@ namespace StreamRipper.Builders
         /// Build the 
         /// </summary>
         /// <returns></returns>
-        public override PluginManager Build() => Run(new PluginManager(_onMetadataChanged, _onStreamUpdated,
-            _onStreamStarted, _onSongChanged), BeforeBuild);
+        public override IPluginManager Build() => Run(new PluginManager(_onMetadataChanged, _onStreamUpdated,
+            _onStreamStarted, _onStreamEnded, _onSongChanged), BeforeBuild);
     }
 }
