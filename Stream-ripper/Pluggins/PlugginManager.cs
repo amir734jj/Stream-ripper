@@ -42,7 +42,9 @@ namespace StreamRipper.Pluggins
                 .AddBeforeExecution(_ =>
                 {
                     if (_songInfo.SongMetadata != null)
+                    {
                         OnSongChanged(new SongChangedEventArg {SongInfo = _songInfo});
+                    }
                 })
                 // Hold on to the metadata
                 .AddAfterExecution(x =>
