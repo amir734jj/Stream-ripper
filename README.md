@@ -2,7 +2,7 @@
 
 Stream Ripper library, convert an online radio to your music library!
 
-[Nuget](https://github.com/amir734jj/Stream-ripper)
+[Nuget](https://www.nuget.org/packages/StreamRipper/)
 
 Example:
 
