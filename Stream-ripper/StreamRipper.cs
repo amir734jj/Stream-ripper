@@ -59,7 +59,7 @@ namespace StreamRipper
         {
             _running = true;
             _runningTask = new Task(StreamHttpRadio);
-            _runningTask.RunSynchronously();
+            _runningTask.Start();
         }
 
         /// <summary>
