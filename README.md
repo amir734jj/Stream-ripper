@@ -2,17 +2,23 @@
 
 Stream Ripper library, convert an online radio to your music library!
 
+[Nuget](https://www.nuget.org/packages/StreamRipper/)
+
 Example:
 
 ```csharp
-streamRipper = new StreamRipper("https://rj1.rjstream.com/",
+SongInfo songInfo = null;
+
+StreamRipper streamRipper = null;
+
+streamRipper = new StreamRipper(new Uri("https://rj1.rjstream.com/"),
     PlugginManagerBuilder
         .New()
         .SetOnSongChanged(x =>
         {
             songInfo = x.SongInfo;
-            // ReSharper disable once AccessToModifiedClosure
-            // ReSharper disable once PossibleNullReferenceException
+
+            // Stop the stream!
             streamRipper.Dispose();
         })
         .Build());
