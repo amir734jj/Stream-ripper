@@ -94,6 +94,7 @@ namespace StreamRipper
                         var readBytes = 0;
                         var metadataSb = new StringBuilder();
 
+                        // Loop forever
                         while (_running)
                         {
                             if (bufferPosition >= readBytes)

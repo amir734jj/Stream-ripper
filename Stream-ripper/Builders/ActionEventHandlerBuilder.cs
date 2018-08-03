@@ -81,13 +81,15 @@ namespace StreamRipper.Builders
         /// <param name="arg"></param>
         private void ActionTask(T arg)
         {
+            _beforeExecution.ForEach(action => action(arg));
+            
             // Make sure filters passes
             if (_filterExecution.All(filter => filter(arg)))
             {
-                _beforeExecution.ForEach(action => action(arg));
                 _action(arg);
-                _afterExecution.ForEach(action => action(arg));
             }
+            
+            _afterExecution.ForEach(action => action(arg));
         }
     }
 }

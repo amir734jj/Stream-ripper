@@ -1,11 +1,8 @@
 using System;
-using System.IO;
-using System.Linq;
 using Xunit;
 using StreamRipper.Builders;
 using StreamRipper.Extensions;
 using StreamRipper.Models;
-using StreamRipper.Models.Events;
 
 namespace StreamRipper.Tests
 {
