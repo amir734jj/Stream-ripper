@@ -29,7 +29,7 @@ namespace StreamRipper.Builders
         public IPlugginManagerBuilder SetOnMetadataChanged(Action<MetadataChangedEventArg> onMetadataChanged,
             Func<MetadataChangedEventArg, bool> filter = null) =>
             Run(this, () => _onMetadataChanged = onMetadataChanged,
-                () => _onMetadataChanged = FilterAction(_onMetadataChanged, filter?? EmptyFilter<MetadataChangedEventArg>()));
+                () => _onMetadataChanged = FilterAction(_onMetadataChanged, filter ?? EmptyFilter<MetadataChangedEventArg>()));
 
         /// <summary>
         /// Set the on stram update
@@ -40,7 +40,7 @@ namespace StreamRipper.Builders
         public IPlugginManagerBuilder SetOnStreamUpdated(Action<StreamUpdateEventArg> onStreamUpdated,
             Func<StreamUpdateEventArg, bool> filter = null) =>
             Run(this, () => _onStreamUpdated = onStreamUpdated,
-                () => _onStreamUpdated = FilterAction(_onStreamUpdated, filter?? EmptyFilter<StreamUpdateEventArg>()));
+                () => _onStreamUpdated = FilterAction(_onStreamUpdated, filter ?? EmptyFilter<StreamUpdateEventArg>()));
 
         /// <summary>
         /// Set the on stram started
@@ -51,7 +51,7 @@ namespace StreamRipper.Builders
         public IPlugginManagerBuilder SetOnStreamStarted(Action<StreamStartedEventArg> onStreamStarted,
             Func<StreamStartedEventArg, bool> filter = null) =>
             Run(this, () => _onStreamStarted = onStreamStarted,
-                () => _onStreamStarted = FilterAction(_onStreamStarted, filter?? EmptyFilter<StreamStartedEventArg>()));
+                () => _onStreamStarted = FilterAction(_onStreamStarted, filter ?? EmptyFilter<StreamStartedEventArg>()));
 
         /// <summary>
         /// Set the on stream ended
@@ -62,7 +62,7 @@ namespace StreamRipper.Builders
         public IPlugginManagerBuilder SetOnStreamEnded(Action<StreamEndedEventArg> onStreamEnded,
             Func<StreamEndedEventArg, bool> filter = null) =>
             Run(this, () => _onStreamEnded = onStreamEnded,
-                () => _onStreamEnded = FilterAction(_onStreamEnded, filter?? EmptyFilter<StreamEndedEventArg>()));
+                () => _onStreamEnded = FilterAction(_onStreamEnded, filter ?? EmptyFilter<StreamEndedEventArg>()));
 
         /// <summary>
         /// Set the on song changed
