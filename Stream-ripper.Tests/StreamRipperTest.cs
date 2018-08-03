@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Xunit;
 using StreamRipper.Builders;
+using StreamRipper.Extensions;
 using StreamRipper.Models;
 using StreamRipper.Models.Events;
 
@@ -27,11 +28,20 @@ namespace StreamRipper.Tests
                         songInfo = x.SongInfo;
                         // ReSharper disable once AccessToModifiedClosure
                         // ReSharper disable once PossibleNullReferenceException
-                        streamRipper.Dispose();
+                        // streamRipper.Dispose();
+                    }, x =>
+                    {
+                        // Do not invoke new when it is an advertisement
+                        // ReSharper disable once ConvertToLambdaExpression
+                        return !(x.SongInfo.SongMetadata.Artist + x.SongInfo.SongMetadata.Title)
+                            .ToLower()
+                            .ContainsAny("advertisement", "radio");
                     })
                     .Build());
             
             streamRipper.Start();
+
+            Console.ReadKey();
             
             // Act, Assert
             Assert.NotEmpty(songInfo.Stream.ToArray());

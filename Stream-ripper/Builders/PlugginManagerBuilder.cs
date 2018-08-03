@@ -23,42 +23,57 @@ namespace StreamRipper.Builders
         /// <summary>
         /// Set the on current song changed event
         /// </summary>
-        /// <param name="onCurrentSongChanged"></param>
+        /// <param name="onMetadataChanged"></param>
+        /// <param name="filter"></param>
         /// <returns></returns>
-        public IPlugginManagerBuilder SetOnMetadataChanged(Action<MetadataChangedEventArg> onCurrentSongChanged) =>
-            Run(this, () => _onMetadataChanged = onCurrentSongChanged);
-        
+        public IPlugginManagerBuilder SetOnMetadataChanged(Action<MetadataChangedEventArg> onMetadataChanged,
+            Func<MetadataChangedEventArg, bool> filter = null) =>
+            Run(this, () => _onMetadataChanged = onMetadataChanged,
+                () => _onMetadataChanged = FilterAction(_onMetadataChanged, filter?? EmptyFilter<MetadataChangedEventArg>()));
+
         /// <summary>
         /// Set the on stram update
         /// </summary>
         /// <param name="onStreamUpdated"></param>
+        /// <param name="filter"></param>
         /// <returns></returns>
-        public IPlugginManagerBuilder SetOnStreamUpdated(Action<StreamUpdateEventArg> onStreamUpdated) =>
-            Run(this, () => _onStreamUpdated = onStreamUpdated);
-        
+        public IPlugginManagerBuilder SetOnStreamUpdated(Action<StreamUpdateEventArg> onStreamUpdated,
+            Func<StreamUpdateEventArg, bool> filter = null) =>
+            Run(this, () => _onStreamUpdated = onStreamUpdated,
+                () => _onStreamUpdated = FilterAction(_onStreamUpdated, filter?? EmptyFilter<StreamUpdateEventArg>()));
+
         /// <summary>
         /// Set the on stram started
         /// </summary>
         /// <param name="onStreamStarted"></param>
+        /// <param name="filter"></param>
         /// <returns></returns>
-        public IPlugginManagerBuilder SetOnStreamStarted(Action<StreamStartedEventArg> onStreamStarted) =>
-            Run(this, () => _onStreamStarted = onStreamStarted);
-        
+        public IPlugginManagerBuilder SetOnStreamStarted(Action<StreamStartedEventArg> onStreamStarted,
+            Func<StreamStartedEventArg, bool> filter = null) =>
+            Run(this, () => _onStreamStarted = onStreamStarted,
+                () => _onStreamStarted = FilterAction(_onStreamStarted, filter?? EmptyFilter<StreamStartedEventArg>()));
+
         /// <summary>
         /// Set the on stream ended
         /// </summary>
         /// <param name="onStreamEnded"></param>
+        /// <param name="filter"></param>
         /// <returns></returns>
-        public IPlugginManagerBuilder SetOnStreamEnded(Action<StreamEndedEventArg> onStreamEnded) =>
-            Run(this, () => _onStreamEnded = onStreamEnded);
-        
+        public IPlugginManagerBuilder SetOnStreamEnded(Action<StreamEndedEventArg> onStreamEnded,
+            Func<StreamEndedEventArg, bool> filter = null) =>
+            Run(this, () => _onStreamEnded = onStreamEnded,
+                () => _onStreamEnded = FilterAction(_onStreamEnded, filter?? EmptyFilter<StreamEndedEventArg>()));
+
         /// <summary>
         /// Set the on song changed
         /// </summary>
         /// <param name="onSongChanged"></param>
+        /// <param name="filter"></param>
         /// <returns></returns>
-        public IPlugginManagerBuilder SetOnSongChanged(Action<SongChangedEventArg> onSongChanged) =>
-            Run(this, () => _onSongChanged = onSongChanged);
+        public IPlugginManagerBuilder SetOnSongChanged(Action<SongChangedEventArg> onSongChanged,
+            Func<SongChangedEventArg, bool> filter = null) =>
+            Run(this, () => _onSongChanged = onSongChanged,
+                () => _onSongChanged = FilterAction(_onSongChanged, filter ?? EmptyFilter<SongChangedEventArg>()));
 
         /// <inheritdoc />
         /// <summary>

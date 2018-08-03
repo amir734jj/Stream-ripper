@@ -10,6 +10,6 @@
     <AssemblyVersion>1.2.3</AssemblyVersion>
     <PackageReleaseNotes>Fixed a bug</PackageReleaseNotes>
     <FileVersion>1.2.3</FileVersion>
-	<Version>1.2.3</Version>
+    <Version>1.2.3</Version>
   </PropertyGroup>
 </Project>

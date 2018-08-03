@@ -34,47 +34,47 @@ namespace StreamRipper.Pluggins
         public PluginManager(Action<MetadataChangedEventArg> onMetadataChanged,
             Action<StreamUpdateEventArg> onStreamUpdate, Action<StreamStartedEventArg> onStreamStarted,
             Action<StreamEndedEventArg> onStreamEnded, Action<SongChangedEventArg> onSongChanged)
-        {            
+        {
+            // Count of songs so-far
+            var count = 0;
+            
+            // On song changed event handler wrapper
+            //     - before: set the stream seeker to the beginning
+            //     - after: clear the stream
             OnSongChanged = ActionEventHandlerBuilder<SongChangedEventArg>.New()
-                .AddFilterExecution(x =>
-                {
-                    // Do not invoke new when it is an advertisement
-                    // ReSharper disable once ConvertToLambdaExpression
-                    return !(x.SongInfo.SongMetadata.Artist + x.SongInfo.SongMetadata.Title)
-                        .ToLower()
-                        .Contains("advertisement");
-                })
                 .AddBeforeExecution(x =>
                 {
-                    // Set the stream seeker to the begining
+                    // Set the stream seeker to the beginning
                     x.SongInfo.Stream.Seek(0, SeekOrigin.Begin);
                 })
                 .SetActionHandler(onSongChanged)
                 .AddAfterExecution(_ =>
                 {
-                    // Reset the memory stream
-                    _songInfo.Stream.Clear();
+                    // Dispose the SongInfo
+                    _songInfo.Dispose();
                 })
                 .WrapAsync()
                 .Build();
             
+            // On metadata changed event handler wrapper
+            //     - before: 
             OnMetadataChanged = ActionEventHandlerBuilder<MetadataChangedEventArg>.New()
                 .SetActionHandler(onMetadataChanged)
-                .WrapAsync()
+                .AddFilterExecution(x =>
+                {
+                    // Do not invoke event handler when count == 0
+                    // ReSharper disable once ConvertToLambdaExpression
+                    return count > 0;
+                })
                 // Trigger song change event
                 .AddBeforeExecution(_ =>
                 {
-                    if (_songInfo.SongMetadata != null)
+                    // if count is greater than zero, ignore the first one
+                    if (count > 0)
                     {
                         OnSongChanged(new SongChangedEventArg {
-                            SongInfo = new SongInfo
-                            {
-                                // Pass the song metadata
-                                SongMetadata = _songInfo.SongMetadata,
-
-                                // Clone the stream and pass the cloned to event handler
-                                Stream = _songInfo.Stream.Clone()
-                            }
+                            // Clone SongInfo
+                            SongInfo = (SongInfo) _songInfo.Clone()
                         });
                     }
                 })
@@ -83,29 +83,44 @@ namespace StreamRipper.Pluggins
                 {
                     // Set the metadata
                     _songInfo.SongMetadata = x.SongMetadata;
+                    
+                    // Increment the count
+                    count++;
                 })
+                .WrapAsync()
                 .Build();
 
+            // On stream updated event handler wrapper
+            //    - after: update the stream
             OnStreamUpdate = ActionEventHandlerBuilder<StreamUpdateEventArg>.New()
                 .SetActionHandler(onStreamUpdate)
-                .WrapAsync()
                 // Update the stream
                 .AddAfterExecution(x =>
                 {
+                    // Append to MemoryStream
                     _songInfo.Stream.Write(x.SongRawPartial, 0, x.SongRawPartial.Length);
                 })
+                .WrapAsync()
                 .Build();
             
+            // On stream started event handler wrapper, initialize the fields
+            //    - after: initialize the buffer
             OnStreamStarted = ActionEventHandlerBuilder<StreamStartedEventArg>.New()
                 .SetActionHandler(onStreamStarted)
                 .WrapAsync()
                 // Initialize the buffer
                 .AddAfterExecution(_ =>
                 {
-                    _songInfo = new SongInfo {Stream = new MemoryStream()};
+                    _songInfo = new SongInfo
+                    {
+                        // Empty properties
+                        SongMetadata = new SongMetadata(),
+                        Stream = new MemoryStream()
+                    };
                 })
                 .Build();
 
+            // On stream ended event handler wrapper
             OnStreamEnded = ActionEventHandlerBuilder<StreamEndedEventArg>.New()
                 .SetActionHandler(onStreamEnded)
                 .WrapAsync()

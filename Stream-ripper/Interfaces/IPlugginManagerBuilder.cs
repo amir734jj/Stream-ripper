@@ -5,13 +5,17 @@ namespace StreamRipper.Interfaces
 {
     public interface IPlugginManagerBuilder
     {
-        IPlugginManagerBuilder SetOnMetadataChanged(Action<MetadataChangedEventArg> onCurrentSongChanged);
+        IPlugginManagerBuilder SetOnMetadataChanged(Action<MetadataChangedEventArg> onCurrentSongChanged, 
+            Func<MetadataChangedEventArg, bool> filter = null);
         
-        IPlugginManagerBuilder SetOnStreamUpdated(Action<StreamUpdateEventArg> onStreamUpdated);
+        IPlugginManagerBuilder SetOnStreamUpdated(Action<StreamUpdateEventArg> onStreamUpdated,
+            Func<StreamUpdateEventArg, bool> filter = null);
 
-        IPlugginManagerBuilder SetOnStreamStarted(Action<StreamStartedEventArg> onStreamStarted);
+        IPlugginManagerBuilder SetOnStreamStarted(Action<StreamStartedEventArg> onStreamStarted,
+            Func<StreamStartedEventArg, bool> filter = null);
 
-        IPlugginManagerBuilder SetOnStreamEnded(Action<StreamEndedEventArg> onStreamEnded);
+        IPlugginManagerBuilder SetOnStreamEnded(Action<StreamEndedEventArg> onStreamEnded,
+            Func<StreamEndedEventArg, bool> filter = null);
 
         IPluginManager Build();
     }
