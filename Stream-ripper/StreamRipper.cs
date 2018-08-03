@@ -98,12 +98,18 @@ namespace StreamRipper
                         {
                             if (bufferPosition >= readBytes)
                             {
-                                if (socketStream != null) readBytes = socketStream.Read(buffer, 0, buffer.Length);
+                                if (socketStream != null)
+                                {
+                                    readBytes = socketStream.Read(buffer, 0, buffer.Length);
+                                }
+                                
                                 bufferPosition = 0;
                             }
-
+                           
                             if (readBytes <= 0)
                             {
+                                // Stream ended
+                                _pluginManager.OnStreamEnded(new StreamEndedEventArg());
                                 break;
                             }
 
