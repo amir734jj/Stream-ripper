@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using Xunit;
@@ -18,7 +19,7 @@ namespace StreamRipper.Tests
             // Arrange
             StreamRipper streamRipper = null;
             
-            streamRipper = new StreamRipper("https://rj1.rjstream.com/",
+            streamRipper = new StreamRipper(new Uri("https://rj1.rjstream.com/"), 
                 PlugginManagerBuilder
                     .New()
                     .SetOnSongChanged(x =>
@@ -33,7 +34,7 @@ namespace StreamRipper.Tests
             streamRipper.Start();
             
             // Act, Assert
-            Assert.NotEmpty(songInfo.Bytes);
+            Assert.NotEmpty(songInfo.Stream.ToArray());
         }
     }
 }

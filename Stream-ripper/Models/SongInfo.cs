@@ -6,6 +6,6 @@ namespace StreamRipper.Models
     {
         public SongMetadata SongMetadata { get; set; }
         
-        public byte[] Bytes { get; set; }
+        public MemoryStream Stream { get; set; }
     }
 }

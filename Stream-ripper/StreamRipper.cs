@@ -3,9 +3,8 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using StreamRipper.Interfaces;
-using StreamRipper.Models;
 using StreamRipper.Models.Events;
-using StreamRipper.Pluggins;
+using StreamRipper.Utilities;
 
 namespace StreamRipper
 {
@@ -19,8 +18,8 @@ namespace StreamRipper
         /// <summary>
         /// Plugin manager instance
         /// </summary>
-        private readonly PluginManager _pluginManager;
-        
+        private readonly IPluginManager _pluginManager;
+
         /// <summary>
         /// StreamRipping task
         /// </summary>
@@ -36,9 +35,9 @@ namespace StreamRipper
         /// </summary>
         /// <param name="url"></param>
         /// <param name="pluginManager"></param>
-        public StreamRipper(string url, PluginManager pluginManager)
+        public StreamRipper(Uri url, IPluginManager pluginManager)
         {
-            _url = url;
+            _url = url.AbsoluteUri;
             _running = false;
             _pluginManager = pluginManager;
         }
@@ -51,7 +50,7 @@ namespace StreamRipper
             _running = true;
             _runningTask = Task.Run(() => StreamHttpRadio());
         }
-        
+
         /// <summary>
         /// Start the streaming
         /// </summary>
@@ -59,7 +58,7 @@ namespace StreamRipper
         {
             _running = true;
             _runningTask = new Task(StreamHttpRadio);
-            _runningTask.RunSynchronously();
+            _runningTask.Start();
         }
 
         /// <summary>
@@ -71,12 +70,12 @@ namespace StreamRipper
             request.Headers.Add("icy-metadata", "1");
             request.ReadWriteTimeout = 10 * 1000;
             request.Timeout = 10 * 1000;
-            
+
             using (var response = (HttpWebResponse) request.GetResponse())
             {
                 // Trigger on stream started
                 _pluginManager.OnStreamStarted(new StreamStartedEventArg());
-                
+
                 // Get the position of metadata
                 var metaInt = 0;
                 if (!string.IsNullOrEmpty(response.GetResponseHeader("icy-metaint")))
@@ -86,79 +85,95 @@ namespace StreamRipper
 
                 using (var socketStream = response.GetResponseStream())
                 {
-                    var buffer = new byte[16384];
-                    var metadataLength = 0;
-                    var streamPosition = 0;
-                    var bufferPosition = 0;
-                    var readBytes = 0;
-                    var metadataSb = new StringBuilder();
-
-                    while (_running)
+                    try
                     {
-                        if (bufferPosition >= readBytes)
-                        {
-                            if (socketStream != null) readBytes = socketStream.Read(buffer, 0, buffer.Length);
-                            bufferPosition = 0;
-                        }
+                        var buffer = new byte[16384];
+                        var metadataLength = 0;
+                        var streamPosition = 0;
+                        var bufferPosition = 0;
+                        var readBytes = 0;
+                        var metadataSb = new StringBuilder();
 
-                        if (readBytes <= 0)
+                        while (_running)
                         {
-                            break;
-                        }
-
-                        if (metadataLength == 0)
-                        {
-                            if (metaInt == 0 || streamPosition + readBytes - bufferPosition <= metaInt)
+                            if (bufferPosition >= readBytes)
                             {
-                                streamPosition += readBytes - bufferPosition;
-                                ProcessStreamData(buffer, ref bufferPosition, readBytes - bufferPosition);
-                                continue;
-                            }
-
-                            ProcessStreamData(buffer, ref bufferPosition, metaInt - streamPosition);
-                            metadataLength = Convert.ToInt32(buffer[bufferPosition++]) * 16;
-                            
-                            // Check if there's any metadata, otherwise skip to next block
-                            if (metadataLength == 0)
-                            {
-                                streamPosition = Math.Min(readBytes - bufferPosition, metaInt);
-                                ProcessStreamData(buffer, ref bufferPosition, streamPosition);
-                                continue;
-                            }
-                        }
-
-                        // Get the metadata and reset the position
-                        while (bufferPosition < readBytes)
-                        {
-                            metadataSb.Append(Convert.ToChar(buffer[bufferPosition++]));
-                            metadataLength--;
-                            
-                            // ReSharper disable once InvertIf
-                            if (metadataLength == 0)
-                            {
-                                var metadata = metadataSb.ToString();
-                                streamPosition = Math.Min(readBytes - bufferPosition, metaInt);
-                                ProcessStreamData(buffer, ref bufferPosition, streamPosition);
-
-                                // Trigger song change event
-                                _pluginManager.OnMetadataChanged(new MetadataChangedEventArg
+                                if (socketStream != null)
                                 {
-                                    SongMetadata = new SongMetadata
-                                    {
-                                        Artist = metadata,
-                                        Title = metadata
-                                    }
-                                });
+                                    readBytes = socketStream.Read(buffer, 0, buffer.Length);
+                                }
                                 
-                                metadataSb.Clear();
+                                bufferPosition = 0;
+                            }
+                           
+                            if (readBytes <= 0)
+                            {
+                                // Stream ended
+                                _pluginManager.OnStreamEnded(new StreamEndedEventArg());
                                 break;
                             }
+
+                            if (metadataLength == 0)
+                            {
+                                if (metaInt == 0 || streamPosition + readBytes - bufferPosition <= metaInt)
+                                {
+                                    streamPosition += readBytes - bufferPosition;
+                                    ProcessStreamData(buffer, ref bufferPosition, readBytes - bufferPosition);
+                                    continue;
+                                }
+
+                                ProcessStreamData(buffer, ref bufferPosition, metaInt - streamPosition);
+                                metadataLength = Convert.ToInt32(buffer[bufferPosition++]) * 16;
+
+                                // Check if there's any metadata, otherwise skip to next block
+                                if (metadataLength == 0)
+                                {
+                                    streamPosition = Math.Min(readBytes - bufferPosition, metaInt);
+                                    ProcessStreamData(buffer, ref bufferPosition, streamPosition);
+                                    continue;
+                                }
+                            }
+
+                            // Get the metadata and reset the position
+                            while (bufferPosition < readBytes)
+                            {
+                                metadataSb.Append(Convert.ToChar(buffer[bufferPosition++]));
+                                metadataLength--;
+
+                                // ReSharper disable once InvertIf
+                                if (metadataLength == 0)
+                                {
+                                    var metadata = metadataSb.ToString();
+                                    streamPosition = Math.Min(readBytes - bufferPosition, metaInt);
+                                    ProcessStreamData(buffer, ref bufferPosition, streamPosition);
+
+                                    // Trigger song change event
+                                    _pluginManager.OnMetadataChanged(new MetadataChangedEventArg
+                                    {
+                                        SongMetadata = MetadataUtility.ParseMetadata(metadata)
+                                    });
+
+                                    metadataSb.Clear();
+                                    break;
+                                }
+                            }
                         }
+                    }
+                    catch (Exception e)
+                    {
+                        // Invoke on stream ended
+                        _pluginManager.OnStreamEnded(new StreamEndedEventArg { Exception = e });
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Process the stream
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <param name="offset"></param>
+        /// <param name="length"></param>
         private void ProcessStreamData(byte[] buffer, ref int offset, int length)
         {
             if (length < 1)
@@ -168,13 +183,13 @@ namespace StreamRipper
 
             var data = new byte[length];
             Buffer.BlockCopy(buffer, offset, data, 0, length);
-            
+
             // Trigger update
             _pluginManager.OnStreamUpdate(new StreamUpdateEventArg
             {
                 SongRawPartial = data
             });
-            
+
             offset += length;
         }
 

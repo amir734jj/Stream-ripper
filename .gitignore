@@ -1,2 +1,11 @@
 
 \.idea/
+
+Stream-ripper/bin/
+
+Stream-ripper/obj/
+
+Stream-ripper\.Tests/bin/
+
+Stream-ripper\.Tests/obj/
+/.vs/Stream-ripper
