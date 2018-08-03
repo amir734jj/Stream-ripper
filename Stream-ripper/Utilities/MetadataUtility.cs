@@ -28,8 +28,8 @@ namespace StreamRipper.Utilities
             // Return the first not null or empty matches
             return new SongMetadata
             {
-                Artist = artist.FirstOrDefault(string.IsNullOrEmpty),
-                Title = title.FirstOrDefault(string.IsNullOrEmpty)
+                Artist = artist.FirstOrDefault(x => !string.IsNullOrEmpty(x)),
+                Title = title.FirstOrDefault(x => !string.IsNullOrEmpty(x))
             };
         }
     }

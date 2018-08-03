@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using StreamRipper.Builders;
+using StreamRipper.Extensions;
 using StreamRipper.Interfaces;
 using StreamRipper.Models;
 using StreamRipper.Models.Events;
@@ -49,6 +50,11 @@ namespace StreamRipper.Pluggins
                     x.SongInfo.Stream.Seek(0, SeekOrigin.Begin);
                 })
                 .SetActionHandler(onSongChanged)
+                .AddAfterExecution(_ =>
+                {
+                    // Reset the memory stream
+                    _songInfo.Stream.Clear();
+                })
                 .WrapAsync()
                 .Build();
             
@@ -60,12 +66,22 @@ namespace StreamRipper.Pluggins
                 {
                     if (_songInfo.SongMetadata != null)
                     {
-                        OnSongChanged(new SongChangedEventArg {SongInfo = _songInfo});
+                        OnSongChanged(new SongChangedEventArg {
+                            SongInfo = new SongInfo
+                            {
+                                // Pass the song metadata
+                                SongMetadata = _songInfo.SongMetadata,
+
+                                // Clone the stream and pass the cloned to event handler
+                                Stream = _songInfo.Stream.Clone()
+                            }
+                        });
                     }
                 })
                 // Hold on to the metadata
                 .AddAfterExecution(x =>
                 {
+                    // Set the metadata
                     _songInfo.SongMetadata = x.SongMetadata;
                 })
                 .Build();
