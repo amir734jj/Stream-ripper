@@ -43,7 +43,7 @@ namespace StreamRipper
         }
 
         /// <summary>
-        /// Start the streaming
+        /// Start the streaming in async fashion
         /// </summary>
         public void StartAsync()
         {
@@ -52,13 +52,13 @@ namespace StreamRipper
         }
 
         /// <summary>
-        /// Start the streaming
+        /// Start the streaming in sync fashion
         /// </summary>
         public void Start()
         {
             _running = true;
             _runningTask = new Task(StreamHttpRadio);
-            _runningTask.Start();
+            _runningTask.RunSynchronously();
         }
 
         /// <summary>

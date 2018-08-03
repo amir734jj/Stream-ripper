@@ -26,6 +26,7 @@ namespace StreamRipper.Tests
                     .SetOnSongChanged(x =>
                     {
                         songInfo = x.SongInfo;
+                        Console.WriteLine(x.SongInfo.SongMetadata.Artist);
                         // ReSharper disable once AccessToModifiedClosure
                         // ReSharper disable once PossibleNullReferenceException
                         // streamRipper.Dispose();
@@ -39,9 +40,8 @@ namespace StreamRipper.Tests
                     })
                     .Build());
             
+            // Start streaming in sync fashion
             streamRipper.Start();
-
-            Console.ReadKey();
             
             // Act, Assert
             Assert.NotEmpty(songInfo.Stream.ToArray());
