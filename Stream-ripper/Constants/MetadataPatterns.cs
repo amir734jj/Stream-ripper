@@ -2,9 +2,12 @@
 
 namespace StreamRipper.Constants
 {
+    /// <summary>
+    /// Pattern constants
+    /// </summary>
     public class MetadataPatterns
     {
-        private static readonly ReadOnlyCollection<string> MetadataSongPatterns = new ReadOnlyCollection<string>(new[]
+        public static readonly ReadOnlyCollection<string> MetadataSongPatterns = new ReadOnlyCollection<string>(new[]
         {
             @"StreamTitle='(?<title>[^~]+?) - (?<artist>[^~]+?)'",
             @"StreamTitle='(?<title>.+?)~(?<artist>.+?)~"

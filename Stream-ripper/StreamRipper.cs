@@ -3,9 +3,8 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using StreamRipper.Interfaces;
-using StreamRipper.Models;
 using StreamRipper.Models.Events;
-using StreamRipper.Pluggins;
+using StreamRipper.Utilities;
 
 namespace StreamRipper
 {
@@ -145,12 +144,7 @@ namespace StreamRipper
                                     // Trigger song change event
                                     _pluginManager.OnMetadataChanged(new MetadataChangedEventArg
                                     {
-                                        SongMetadata = new SongMetadata
-                                        {
-                                            // TODO: use a regex
-                                            Artist = metadata,
-                                            Title = metadata
-                                        }
+                                        SongMetadata = MetadataUtility.ParseMetadata(metadata)
                                     });
 
                                     metadataSb.Clear();

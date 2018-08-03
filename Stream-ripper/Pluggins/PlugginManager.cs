@@ -19,7 +19,7 @@ namespace StreamRipper.Pluggins
         public Action<StreamEndedEventArg> OnStreamEnded { get; }
         
         public Action<SongChangedEventArg> OnSongChanged { get; }
-
+         
         private SongInfo _songInfo;
 
         /// <summary>
@@ -35,6 +35,19 @@ namespace StreamRipper.Pluggins
             Action<StreamEndedEventArg> onStreamEnded, Action<SongChangedEventArg> onSongChanged)
         {            
             OnSongChanged = ActionEventHandlerBuilder<SongChangedEventArg>.New()
+                .AddFilterExecution(x =>
+                {
+                    // Do not invoke new when it is an advertisement
+                    // ReSharper disable once ConvertToLambdaExpression
+                    return !(x.SongInfo.SongMetadata.Artist + x.SongInfo.SongMetadata.Title)
+                        .ToLower()
+                        .Contains("advertisement");
+                })
+                .AddBeforeExecution(x =>
+                {
+                    // Set the stream seeker to the begining
+                    x.SongInfo.Stream.Seek(0, SeekOrigin.Begin);
+                })
                 .SetActionHandler(onSongChanged)
                 .WrapAsync()
                 .Build();

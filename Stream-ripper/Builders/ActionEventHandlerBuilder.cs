@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using StreamRipper.Interfaces;
 
@@ -12,6 +13,8 @@ namespace StreamRipper.Builders
         private readonly List<Action<T>> _beforeExecution = new List<Action<T>>();
         
         private readonly List<Action<T>> _afterExecution = new List<Action<T>>();
+        
+        private readonly List<Func<T, bool>> _filterExecution = new List<Func<T, bool>>();
         
         private bool _async = true;
 
@@ -42,6 +45,13 @@ namespace StreamRipper.Builders
         /// <param name="action"></param>
         /// <returns></returns>
         public IActionEventHandlerBuilder<T> AddAfterExecution(Action<T> action) => Run(this, () => _afterExecution.Add(action));
+
+        /// <summary>
+        /// Add filter execution
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        public IActionEventHandlerBuilder<T> AddFilterExecution(Func<T, bool> filter) => Run(this, () => _filterExecution.Add(filter));
         
         /// <inheritdoc />
         /// <summary>
@@ -49,7 +59,6 @@ namespace StreamRipper.Builders
         /// </summary>
         protected override void BeforeBuild() => _action = _action ?? EmptyAction<T>();
 
-        /// <inheritdoc />
         /// <summary>
         /// Build the complete action
         /// </summary>
@@ -72,9 +81,13 @@ namespace StreamRipper.Builders
         /// <param name="arg"></param>
         private void ActionTask(T arg)
         {
-            _beforeExecution.ForEach(action => action(arg));
-            _action(arg);
-            _afterExecution.ForEach(action => action(arg));
+            // Make sure filters passes
+            if (_filterExecution.All(filter => filter(arg)))
+            {
+                _beforeExecution.ForEach(action => action(arg));
+                _action(arg);
+                _afterExecution.ForEach(action => action(arg));
+            }
         }
     }
 }

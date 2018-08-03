@@ -74,7 +74,6 @@ namespace StreamRipper.Builders
             _onSongChanged = _onSongChanged ?? EmptyAction<SongChangedEventArg>();
         }
         
-        /// <inheritdoc />
         /// <summary>
         /// Build the 
         /// </summary>
