@@ -26,10 +26,12 @@ namespace StreamRipper.Tests
                     .SetOnSongChanged(x =>
                     {
                         songInfo = x.SongInfo;
-                        Console.WriteLine(x.SongInfo.SongMetadata.Artist);
+                                                
                         // ReSharper disable once AccessToModifiedClosure
                         // ReSharper disable once PossibleNullReferenceException
-                        // streamRipper.Dispose();
+                        streamRipper.Dispose();
+                        
+                        Console.WriteLine(x.SongInfo.SongMetadata.Artist);
                     }, x =>
                     {
                         // Do not invoke new when it is an advertisement
