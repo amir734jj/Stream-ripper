@@ -1,11 +1,20 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using StreamRipper.Models.Events;
 
 namespace StreamRipper.Interfaces
 {
-    public interface IStreamRipper
+    public interface IStreamRipper: IDisposable
     {        
-        void StartAsync();
-
+        EventHandler<MetadataChangedEventArg> MetadataEventHandlers { get; set; }
+        
+        EventHandler<StreamUpdateEventArg> StreamUpdateEventHandlers { get; set; }
+        
+        EventHandler<StreamStartedEventArg> StreamStartedEventHandlers { get; set; } 
+        
+        EventHandler<StreamEndedEventArg> StreamEndedEventHandlers { get; set; }
+        
+        EventHandler<SongChangedEventArg> SongChangedEventHandlers { get; set; }
+        
         void Start();
     }
 }

@@ -1,24 +1,47 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using StreamRipper.Builders;
 using StreamRipper.Interfaces;
+using StreamRipper.Models;
 using StreamRipper.Models.Events;
 using StreamRipper.Utilities;
 
 namespace StreamRipper
 {
-    public class StreamRipper : IDisposable, IStreamRipper
+    public class StreamRipper : BaseBuilder<StreamRipper, Uri>, IStreamRipper
     {
+        /// <summary>
+        /// Metadata updated event handlers
+        /// </summary>
+        public EventHandler<MetadataChangedEventArg> MetadataEventHandlers { get; set;}
+
+        /// <summary>
+        /// Stream updated event handlers
+        /// </summary>
+        public EventHandler<StreamUpdateEventArg> StreamUpdateEventHandlers { get; set; }
+        
+        /// <summary>
+        /// Stream started event handlers
+        /// </summary>
+        public EventHandler<StreamStartedEventArg> StreamStartedEventHandlers { get; set; }
+        
+        /// <summary>
+        /// Stream ended event handlers
+        /// </summary>
+        public EventHandler<StreamEndedEventArg> StreamEndedEventHandlers { get; set; }
+        
+        /// <summary>
+        /// Song change event handlers
+        /// </summary>
+        public EventHandler<SongChangedEventArg> SongChangedEventHandlers { get; set; }
+        
         /// <summary>
         /// Url to stream
         /// </summary>
         private readonly string _url;
-
-        /// <summary>
-        /// Plugin manager instance
-        /// </summary>
-        private readonly IPluginManager _pluginManager;
 
         /// <summary>
         /// StreamRipping task
@@ -31,34 +54,74 @@ namespace StreamRipper
         private bool _running;
 
         /// <summary>
+        /// Count of songs, ripped so far
+        /// </summary>
+        private decimal _count = 0;
+        
+        /// <summary>
+        /// SongInfo reference
+        /// </summary>
+        private SongInfo _songInfo;
+        
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="url"></param>
-        /// <param name="pluginManager"></param>
-        public StreamRipper(Uri url, IPluginManager pluginManager)
+        public StreamRipper(Uri url)
         {
             _url = url.AbsoluteUri;
+
+            SongChangedEventHandlers = (_, arg) => { };
+
+            StreamEndedEventHandlers += (_, arg) => { };
+            
+            StreamStartedEventHandlers += (_, arg) =>
+            {
+                // Initialize the SongInfo
+                _songInfo = new SongInfo
+                {
+                    // Empty properties
+                    SongMetadata = new SongMetadata(),
+                    Stream = new MemoryStream()
+                };
+            };
+
+            StreamUpdateEventHandlers += (_, arg) =>
+            {
+                // Append to MemoryStream
+                _songInfo.Stream.Write(arg.SongRawPartial, 0, arg.SongRawPartial.Length);
+            };
+
+            MetadataEventHandlers += (_, arg) =>
+            {
+                // if count is greater than zero, ignore the first one
+                if (_count > 0)
+                {
+                    SongChangedEventHandlers.Invoke(this, new SongChangedEventArg
+                    {
+                        // Clone SongInfo
+                        SongInfo = (SongInfo) _songInfo.Clone()
+                    });
+
+                    // Clean the buffer
+                    _songInfo.Dispose();
+                }
+                
+                // Set the metadata
+                _songInfo.SongMetadata = arg.SongMetadata;
+            };
+            
+            // Initialize
             _running = false;
-            _pluginManager = pluginManager;
         }
 
         /// <summary>
         /// Start the streaming in async fashion
         /// </summary>
-        public void StartAsync()
-        {
-            _running = true;
-            _runningTask = Task.Run(() => StreamHttpRadio());
-        }
-
-        /// <summary>
-        /// Start the streaming in sync fashion
-        /// </summary>
         public void Start()
         {
             _running = true;
-            _runningTask = new Task(StreamHttpRadio);
-            _runningTask.RunSynchronously();
+            _runningTask = Task.Run(() => StreamHttpRadio());
         }
 
         /// <summary>
@@ -74,7 +137,7 @@ namespace StreamRipper
             using (var response = (HttpWebResponse) request.GetResponse())
             {
                 // Trigger on stream started
-                _pluginManager.OnStreamStarted(new StreamStartedEventArg());
+                StreamStartedEventHandlers.Invoke(this, new StreamStartedEventArg());
 
                 // Get the position of metadata
                 var metaInt = 0;
@@ -110,7 +173,7 @@ namespace StreamRipper
                             if (readBytes <= 0)
                             {
                                 // Stream ended
-                                _pluginManager.OnStreamEnded(new StreamEndedEventArg());
+                                StreamEndedEventHandlers.Invoke(this, new StreamEndedEventArg());
                                 break;
                             }
 
@@ -149,11 +212,14 @@ namespace StreamRipper
                                     ProcessStreamData(buffer, ref bufferPosition, streamPosition);
 
                                     // Trigger song change event
-                                    _pluginManager.OnMetadataChanged(new MetadataChangedEventArg
+                                    MetadataEventHandlers.Invoke(this, new MetadataChangedEventArg
                                     {
                                         SongMetadata = MetadataUtility.ParseMetadata(metadata)
                                     });
-
+                                    
+                                    // Increment the count
+                                    _count++;
+                                    
                                     metadataSb.Clear();
                                     break;
                                 }
@@ -163,7 +229,8 @@ namespace StreamRipper
                     catch (Exception e)
                     {
                         // Invoke on stream ended
-                        _pluginManager.OnStreamEnded(new StreamEndedEventArg { Exception = e });
+                        StreamEndedEventHandlers.Invoke(this, new StreamEndedEventArg { Exception = e });
+                        Console.WriteLine(e.Message);
                     }
                 }
             }
@@ -186,7 +253,7 @@ namespace StreamRipper
             Buffer.BlockCopy(buffer, offset, data, 0, length);
 
             // Trigger update
-            _pluginManager.OnStreamUpdate(new StreamUpdateEventArg
+            StreamUpdateEventHandlers.Invoke(this, new StreamUpdateEventArg
             {
                 SongRawPartial = data
             });
