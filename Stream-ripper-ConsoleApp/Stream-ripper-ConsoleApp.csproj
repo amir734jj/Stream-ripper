@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <RootNamespace>StreamRipper.ConsoleApp</RootNamespace>
+    <AssemblyName>StreamRipper.ConsoleApp</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Stream-ripper\Stream-ripper.csproj" />
+  </ItemGroup>
+</Project>

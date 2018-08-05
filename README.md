@@ -7,21 +7,23 @@ Stream Ripper library, convert an online radio to your music library!
 Example:
 
 ```csharp
-SongInfo songInfo = null;
+var streamRipper = StreamRipper.New(new Uri("https://rj1.rjstream.com/"));
 
-StreamRipper streamRipper = null;
+// The recommended way is to have an async event handlers
+streamRipper.SongChangedEventHandlers += async (_, arg) =>
+{
+    // Create filename from SongInfo
+    var filename = $"{arg.SongInfo.SongMetadata.Artist}-{arg.SongInfo.SongMetadata.Title}";
 
-streamRipper = new StreamRipper(new Uri("https://rj1.rjstream.com/"),
-    PlugginManagerBuilder
-        .New()
-        .SetOnSongChanged(x =>
-        {
-            songInfo = x.SongInfo;
+    // Save the stream to file
+    await arg.SongInfo.Stream.ToFileStream($@"\Music\ripped\{filename}.mp3");
+};
 
-            // Stop the stream!
-            streamRipper.Dispose();
-        })
-        .Build());
+// Async start
+streamRipper.Start();
+
+// To Stop
+// streamRipper.Dispose();
 ```
 
 Events:

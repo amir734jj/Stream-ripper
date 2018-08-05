@@ -15,7 +15,6 @@ namespace StreamRipper.Models
         /// </summary>
         public void Dispose()
         {
-            Stream?.Dispose();
             Stream?.Clear();
         }
 
@@ -26,7 +25,7 @@ namespace StreamRipper.Models
         public object Clone() => new SongInfo
         {
             SongMetadata = (SongMetadata) SongMetadata?.Clone(),
-            Stream = Stream?.Clone()
+            Stream = Stream?.Clone().Result
         };
     }
 }

@@ -1,0 +1,14 @@
+C:\workspace\Stream-ripper\Stream-ripper-ConsoleApp\bin\Debug\netcoreapp2.1\StreamRipper.ConsoleApp.deps.json
+C:\workspace\Stream-ripper\Stream-ripper-ConsoleApp\bin\Debug\netcoreapp2.1\StreamRipper.ConsoleApp.runtimeconfig.json
+C:\workspace\Stream-ripper\Stream-ripper-ConsoleApp\bin\Debug\netcoreapp2.1\StreamRipper.ConsoleApp.runtimeconfig.dev.json
+C:\workspace\Stream-ripper\Stream-ripper-ConsoleApp\bin\Debug\netcoreapp2.1\StreamRipper.ConsoleApp.dll
+C:\workspace\Stream-ripper\Stream-ripper-ConsoleApp\bin\Debug\netcoreapp2.1\StreamRipper.ConsoleApp.pdb
+C:\workspace\Stream-ripper\Stream-ripper-ConsoleApp\bin\Debug\netcoreapp2.1\StreamRipper.dll
+C:\workspace\Stream-ripper\Stream-ripper-ConsoleApp\bin\Debug\netcoreapp2.1\StreamRipper.pdb
+C:\workspace\Stream-ripper\Stream-ripper-ConsoleApp\obj\Debug\netcoreapp2.1\Stream-ripper-ConsoleApp.csprojAssemblyReference.cache
+C:\workspace\Stream-ripper\Stream-ripper-ConsoleApp\obj\Debug\netcoreapp2.1\Stream-ripper-ConsoleApp.csproj.CoreCompileInputs.cache
+C:\workspace\Stream-ripper\Stream-ripper-ConsoleApp\obj\Debug\netcoreapp2.1\Stream-ripper-ConsoleApp.AssemblyInfoInputs.cache
+C:\workspace\Stream-ripper\Stream-ripper-ConsoleApp\obj\Debug\netcoreapp2.1\Stream-ripper-ConsoleApp.AssemblyInfo.cs
+C:\workspace\Stream-ripper\Stream-ripper-ConsoleApp\obj\Debug\netcoreapp2.1\Stream-ripper-ConsoleApp.csproj.CopyComplete
+C:\workspace\Stream-ripper\Stream-ripper-ConsoleApp\obj\Debug\netcoreapp2.1\StreamRipper.ConsoleApp.dll
+C:\workspace\Stream-ripper\Stream-ripper-ConsoleApp\obj\Debug\netcoreapp2.1\StreamRipper.ConsoleApp.pdb

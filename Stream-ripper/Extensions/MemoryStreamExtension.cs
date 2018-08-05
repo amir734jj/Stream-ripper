@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace StreamRipper.Extensions
 {
@@ -13,9 +14,6 @@ namespace StreamRipper.Extensions
         /// <param name="source"></param>
         public static void Clear(this MemoryStream source)
         {
-            byte[] buffer = source.GetBuffer();
-            Array.Clear(buffer, 0, buffer.Length);
-            source.Position = 0;
             source.SetLength(0);
         }
 
@@ -24,14 +22,32 @@ namespace StreamRipper.Extensions
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static MemoryStream Clone(this MemoryStream source)
+        public static async Task<MemoryStream> Clone(this MemoryStream source)
         {
-            var pos = source.Position;
+            source.Seek(0, SeekOrigin.Begin);
             var destination = new MemoryStream();
-            source.CopyTo(destination);
-            source.Position = pos;
-            destination.Position = pos;
+            await source.CopyToAsync(destination);
             return destination;
+        }
+
+        /// <summary>
+        /// Copy stream to file
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static async Task ToFileStream(this MemoryStream source, string path)
+        {
+            var fileStream = new FileStream(path, FileMode.Create, FileAccess.ReadWrite);
+
+            // Needed
+            source.Seek(0, SeekOrigin.Begin);
+            
+            // Copy to file stream
+            await source.CopyToAsync(fileStream);
+            
+            // Release
+            fileStream.Dispose();;
         }
     }
 }

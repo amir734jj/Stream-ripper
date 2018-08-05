@@ -7,9 +7,9 @@
     <Description>Strem ripper with async event system</Description>
     <RepositoryUrl>https://github.com/amir734jj/Stream-ripper</RepositoryUrl>
     <PackageProjectUrl>https://github.com/amir734jj/Stream-ripper</PackageProjectUrl>
-    <AssemblyVersion>1.2.5</AssemblyVersion>
-    <PackageReleaseNotes>Fixed a bug</PackageReleaseNotes>
-    <FileVersion>1.2.5</FileVersion>
-    <Version>1.2.5</Version>
+    <AssemblyVersion>2.0.0</AssemblyVersion>
+    <PackageReleaseNotes>Complete re-write</PackageReleaseNotes>
+    <FileVersion>2.0.0</FileVersion>
+    <Version>2.0.0</Version>
   </PropertyGroup>
 </Project>
