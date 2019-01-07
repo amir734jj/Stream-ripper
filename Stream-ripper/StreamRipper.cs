@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using StreamRipper.Builders;
 using StreamRipper.Interfaces;
 using StreamRipper.Models;
 using StreamRipper.Models.Events;
@@ -11,7 +12,7 @@ using StreamRipper.Utilities;
 
 namespace StreamRipper
 {
-    public class StreamRipper : BaseBuilder<StreamRipper, Uri>, IStreamRipper
+    public class StreamRipper : IStreamRipper
     {
         /// <summary>
         /// Metadata updated event handlers
@@ -62,12 +63,13 @@ namespace StreamRipper
         /// SongInfo reference
         /// </summary>
         private SongInfo _songInfo;
-        
+
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="url"></param>
-        public StreamRipper(Uri url)
+        /// <param name="filters"></param>
+        public StreamRipper(Uri url, IEnumerable<Func<SongMetadata, bool>> filters)
         {
             _url = url.AbsoluteUri;
 
@@ -97,11 +99,14 @@ namespace StreamRipper
                 // if count is greater than zero, ignore the first one
                 if (_count > 0)
                 {
-                    SongChangedEventHandlers.Invoke(this, new SongChangedEventArg
+                    if (filters.All(x => x(arg.SongMetadata)))
                     {
-                        // Clone SongInfo
-                        SongInfo = (SongInfo) _songInfo.Clone()
-                    });
+                        SongChangedEventHandlers.Invoke(this, new SongChangedEventArg
+                        {
+                            // Clone SongInfo
+                            SongInfo = (SongInfo) _songInfo.Clone()
+                        });
+                    }
 
                     // Clean the buffer
                     _songInfo.Dispose();
