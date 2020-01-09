@@ -20,7 +20,7 @@ nuget:
       && wget "https://raw.githubusercontent.com/amir734jj/resolve-nuget-version/master/app.py"
       && cd ../
     
-    - python3 "scripts/app.py" "${PACKAGE_NAME}"
+    - python3 "scripts/app.py" "StreamRipper"
     - dotnet build -c Release
     - echo "Calculated version:"
     - python3 "scripts/app.py" "${PACKAGE_NAME}" | dotnet pack ./${PACKAGE_NAME} -c Release -o "${PWD}/artifacts/" --version-suffix 
