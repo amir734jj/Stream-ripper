@@ -7,22 +7,17 @@ nuget:
   image: microsoft/dotnet:2.1-sdk
   stage: nuget
   before_script:
-    - apt-get update \
-      && apt-get install -y python3-pip python3-dev \
-      && cd /usr/local/bin \
-      && ln -s /usr/bin/python3 python \
+    - apt-get update
+      && apt-get install -y python3-pip python3-dev
+      && cd /usr/local/bin
+      && ln -s /usr/bin/python3 python
       && pip3 install --upgrade pip
   only:
     - nuget
   script:
-    - apt-get update \
-      && apt-get install -y python3-pip python3-dev \
-      && cd /usr/local/bin \
-      && ln -s /usr/bin/python3 python \
-      && pip3 install --upgrade pip
-    - mkdir scripts \
-      && cd scripts \
-      && wget "https://raw.githubusercontent.com/amir734jj/resolve-nuget-version/master/app.py" \
+    - mkdir scripts 
+      && cd scripts
+      && wget "https://raw.githubusercontent.com/amir734jj/resolve-nuget-version/master/app.py"
       && cd ../
     
     - python3 "scripts/app.py" ${NAME}
