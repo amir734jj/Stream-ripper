@@ -23,7 +23,7 @@ nuget:
     - python3 "scripts/app.py" "StreamRipper"
     - dotnet build -c Release
     - echo "Calculated version:"
-    - python3 "scripts/app.py" "${PACKAGE_NAME}" | dotnet pack ./${PACKAGE_NAME} -c Release -o "${PWD}/artifacts/" --version-suffix 
+    - python3 "scripts/app.py" "StreamRipper" | dotnet pack ./StreamRipper -c Release -o "${PWD}/artifacts/" --version-suffix 
     - dotnet nuget push --force-english-output -s https://api.nuget.org/v3/index.json -k "${NUGET_API_KEY}" ./artifacts/*.nupkg
   artifacts:
     expire_in: 31d
