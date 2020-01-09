@@ -9,7 +9,7 @@ nuget:
   only:
   - nuget
   script:
-  - mkdir scripts && cd scripts && wget "https://raw.githubusercontent.com/amir734jj/resolve-nuget-version/master/app.py"
+  - mkdir scripts && cd scripts && wget "https://raw.githubusercontent.com/amir734jj/resolve-nuget-version/master/app.py" && cd ../
   - python "scripts/app.py" ${NAME}
   - dotnet build -c Release
   - echo "Calculated version:"
