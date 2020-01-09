@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
+﻿using System.IO;
 using System.Threading.Tasks;
 
 namespace StreamRipper.Extensions
@@ -28,26 +25,6 @@ namespace StreamRipper.Extensions
             var destination = new MemoryStream();
             await source.CopyToAsync(destination);
             return destination;
-        }
-
-        /// <summary>
-        /// Copy stream to file
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        public static async Task ToFileStream(this MemoryStream source, string path)
-        {
-            var fileStream = new FileStream(path, FileMode.Create, FileAccess.ReadWrite);
-
-            // Needed
-            source.Seek(0, SeekOrigin.Begin);
-            
-            // Copy to file stream
-            await source.CopyToAsync(fileStream);
-            
-            // Release
-            fileStream.Dispose();;
         }
     }
 }

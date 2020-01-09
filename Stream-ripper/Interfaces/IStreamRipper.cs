@@ -15,6 +15,8 @@ namespace StreamRipper.Interfaces
         
         EventHandler<SongChangedEventArg> SongChangedEventHandlers { get; set; }
         
+        EventHandler<StreamFailedEventArg> StreamFailedHandlers { get; set; }
+        
         void Start();
     }
 }
