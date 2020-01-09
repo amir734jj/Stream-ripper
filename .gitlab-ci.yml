@@ -21,6 +21,8 @@ nuget:
   - cd scripts && wget "https://raw.githubusercontent.com/amir734jj/resolve-nuget-version/master/app.py"
   - python3 "scripts/app.py" ${NAME}
   - dotnet build -c Release
+  - echo "Calculated version:"
+  - python3 "scripts/app.py" ${NAME}
   - python3 "scripts/app.py" ${NAME} | dotnet pack ./${NAME} -c Release -o "${PWD}/artifacts/" --version-suffix 
   - dotnet nuget push --force-english-output -s https://api.nuget.org/v3/index.json -k "${NUGET_API_KEY}" ./artifacts/*.nupkg
   artifacts:
