@@ -5,7 +5,7 @@ stages:
 build:
   tags:
   - docker
-  image: microsoft/dotnet:2.1-sdk
+  image: microsoft/dotnet:2.2-sdk
   stage: build
   script:
     - dotnet build -c Release
@@ -13,7 +13,7 @@ build:
 nuget:
   tags:
   - docker
-  image: microsoft/dotnet:2.1-sdk
+  image: microsoft/dotnet:2.2-sdk
   stage: nuget
   only:
   - nuget
