@@ -4,10 +4,8 @@ Stream Ripper library, convert an online radio to your music library!
 
 [Nuget](https://www.nuget.org/packages/StreamRipper/)
 
-Example (for version 2.0.0, as of version 2.0.1 please use `StreamRipperBuilder` instead):
-
 ```csharp
-var streamRipper = StreamRipper.New(new Uri("https://rj1.rjstream.com/"));
+var streamRipper = new StreamRipperImpl(new Uri("https://rj1.rjstream.com/"), logger);
 
 // The recommended way is to have an async event handlers
 streamRipper.SongChangedEventHandlers += async (_, arg) =>
