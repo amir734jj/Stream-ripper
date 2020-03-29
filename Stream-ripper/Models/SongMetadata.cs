@@ -10,6 +10,8 @@ namespace StreamRipper.Models
         public string Artist { get; set; }
         
         public string Title { get; set; }
+        
+        public string Raw { get; set; }
 
         /// <summary>
         /// Clone self

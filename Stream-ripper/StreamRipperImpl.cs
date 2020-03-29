@@ -79,16 +79,18 @@ namespace StreamRipper
 
             SongChangedEventHandlers = (_, arg) =>
             {
-                logger.LogInformation("SongChangedEventHandlers invoked", arg);
+                logger.LogTrace("SongChangedEventHandlers invoked", arg);
             };
 
             StreamEndedEventHandlers += (_, arg) =>
             {
-                logger.LogInformation("StreamEndedEventHandlers invoked", arg);
+                logger.LogTrace("StreamEndedEventHandlers invoked", arg);
             };
             
             StreamStartedEventHandlers += (_, arg) =>
             {
+                logger.LogTrace("StreamStartedEventHandlers invoked", arg);
+
                 // Initialize the SongInfo
                 _songInfo = new SongInfo
                 {
@@ -100,7 +102,7 @@ namespace StreamRipper
 
             StreamUpdateEventHandlers += (_, arg) =>
             {
-                logger.LogInformation("StreamUpdateEventHandlers invoked", arg);
+                logger.LogTrace("StreamUpdateEventHandlers invoked", arg);
                 
                 // Append to MemoryStream
                 _songInfo.Stream.Write(arg.SongRawPartial, 0, arg.SongRawPartial.Length);
@@ -108,7 +110,7 @@ namespace StreamRipper
 
             MetadataEventHandlers += (_, arg) =>
             {
-                logger.LogInformation("MetadataEventHandlers invoked", arg);
+                logger.LogTrace("MetadataEventHandlers invoked", arg);
                 
                 // if count is greater than zero, ignore the first one
                 if (_count > 0)

@@ -29,7 +29,8 @@ namespace StreamRipper.Utilities
             return new SongMetadata
             {
                 Artist = artist.FirstOrDefault(x => !string.IsNullOrEmpty(x)),
-                Title = title.FirstOrDefault(x => !string.IsNullOrEmpty(x))
+                Title = title.FirstOrDefault(x => !string.IsNullOrEmpty(x)),
+                Raw = str
             };
         }
     }
