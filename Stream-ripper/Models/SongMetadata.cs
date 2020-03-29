@@ -20,7 +20,8 @@ namespace StreamRipper.Models
         public object Clone() => new SongMetadata
         {
             Artist = (string) Artist.Clone(),
-            Title = (string) Title.Clone()
+            Title = (string) Title.Clone(),
+            Raw = (string) Raw.Clone()
         };
     }
 }
