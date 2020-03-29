@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using StreamRipper.Interfaces;
@@ -49,14 +50,9 @@ namespace StreamRipper
         private readonly string _url;
 
         /// <summary>
-        /// StreamRipping task
-        /// </summary>
-        private Task _runningTask;
-
-        /// <summary>
         /// Flag to indicate whether task is running or not
         /// </summary>
-        private bool _running;
+        private CancellationTokenSource _cancellationToken;
 
         /// <summary>
         /// Count of songs, ripped so far
@@ -130,7 +126,7 @@ namespace StreamRipper
             };
             
             // Initialize
-            _running = false;
+            _cancellationToken = new CancellationTokenSource();
         }
 
         /// <summary>
@@ -138,8 +134,8 @@ namespace StreamRipper
         /// </summary>
         public void Start()
         {
-            _running = true;
-            _runningTask = Task.Run(StreamHttpRadio);
+            _cancellationToken = new CancellationTokenSource();
+            Task.Run(StreamHttpRadio);
         }
 
         /// <summary>
@@ -178,7 +174,7 @@ namespace StreamRipper
                             var metadataSb = new StringBuilder();
 
                             // Loop forever
-                            while (_running)
+                            while (!_cancellationToken.IsCancellationRequested)
                             {
                                 if (bufferPosition >= readBytes)
                                 {
@@ -294,8 +290,7 @@ namespace StreamRipper
         /// </summary>
         public void Dispose()
         {
-            _running = false;
-            _runningTask?.Dispose();
+            _cancellationToken.Cancel();
         }
     }
 }
