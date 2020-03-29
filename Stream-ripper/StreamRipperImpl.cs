@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using StreamRipper.Interfaces;
 using StreamRipper.Models;
 using StreamRipper.Models.Events;
@@ -12,7 +11,7 @@ using StreamRipper.Utilities;
 
 namespace StreamRipper
 {
-    public class StreamRipper : IStreamRipper
+    public class StreamRipperImpl : IStreamRipper
     {
         /// <summary>
         /// Metadata updated event handlers
@@ -62,7 +61,7 @@ namespace StreamRipper
         /// <summary>
         /// Count of songs, ripped so far
         /// </summary>
-        private decimal _count = 0;
+        private decimal _count;
         
         /// <summary>
         /// SongInfo reference
@@ -73,14 +72,20 @@ namespace StreamRipper
         /// Constructor
         /// </summary>
         /// <param name="url"></param>
-        /// <param name="filters"></param>
-        public StreamRipper(Uri url, IEnumerable<Func<SongMetadata, bool>> filters)
+        /// <param name="logger"></param>
+        public StreamRipperImpl(Uri url, ILogger logger)
         {
             _url = url.AbsoluteUri;
 
-            SongChangedEventHandlers = (_, arg) => { };
+            SongChangedEventHandlers = (_, arg) =>
+            {
+                logger.LogInformation("SongChangedEventHandlers invoked", arg);
+            };
 
-            StreamEndedEventHandlers += (_, arg) => { };
+            StreamEndedEventHandlers += (_, arg) =>
+            {
+                logger.LogInformation("StreamEndedEventHandlers invoked", arg);
+            };
             
             StreamStartedEventHandlers += (_, arg) =>
             {
@@ -95,23 +100,24 @@ namespace StreamRipper
 
             StreamUpdateEventHandlers += (_, arg) =>
             {
+                logger.LogInformation("StreamUpdateEventHandlers invoked", arg);
+                
                 // Append to MemoryStream
                 _songInfo.Stream.Write(arg.SongRawPartial, 0, arg.SongRawPartial.Length);
             };
 
             MetadataEventHandlers += (_, arg) =>
             {
+                logger.LogInformation("MetadataEventHandlers invoked", arg);
+                
                 // if count is greater than zero, ignore the first one
                 if (_count > 0)
                 {
-                    if (filters.All(x => x(arg.SongMetadata)))
+                    SongChangedEventHandlers.Invoke(this, new SongChangedEventArg
                     {
-                        SongChangedEventHandlers.Invoke(this, new SongChangedEventArg
-                        {
-                            // Clone SongInfo
-                            SongInfo = (SongInfo) _songInfo.Clone()
-                        });
-                    }
+                        // Clone SongInfo
+                        SongInfo = (SongInfo) _songInfo.Clone()
+                    });
 
                     // Clean the buffer
                     _songInfo.Dispose();
