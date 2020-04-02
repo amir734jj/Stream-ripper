@@ -135,7 +135,12 @@ namespace StreamRipper
         public void Start()
         {
             _cancellationToken = new CancellationTokenSource();
-            Task.Run(StreamHttpRadio);
+
+            Task.Factory.StartNew(StreamHttpRadio,
+                _cancellationToken.Token,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default
+            );
         }
 
         /// <summary>
