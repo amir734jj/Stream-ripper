@@ -124,8 +124,7 @@ namespace StreamRipper
                                 if (readBytes <= 0)
                                 {
                                     // Stream ended
-                                    state.EventHandlers.StreamEndedEventHandlers.Invoke(state,
-                                        new StreamEndedEventArg());
+                                    state.EventHandlers.StreamEndedEventHandlers.Invoke(state, new StreamEndedEventArg());
                                     break;
                                 }
 
@@ -134,8 +133,7 @@ namespace StreamRipper
                                     if (metaInt == 0 || streamPosition + readBytes - bufferPosition <= metaInt)
                                     {
                                         streamPosition += readBytes - bufferPosition;
-                                        ProcessStreamData(state, buffer, ref bufferPosition,
-                                            readBytes - bufferPosition);
+                                        ProcessStreamData(state, buffer, ref bufferPosition, readBytes - bufferPosition);
                                         continue;
                                     }
 
@@ -165,11 +163,10 @@ namespace StreamRipper
                                         ProcessStreamData(state, buffer, ref bufferPosition, streamPosition);
 
                                         // Trigger song change event
-                                        state.EventHandlers.MetadataChangedHandlers.Invoke(state,
-                                            new MetadataChangedEventArg
-                                            {
-                                                SongMetadata = MetadataUtility.ParseMetadata(metadata)
-                                            });
+                                        state.EventHandlers.MetadataChangedHandlers.Invoke(state, new MetadataChangedEventArg
+                                        {
+                                            SongMetadata = MetadataUtility.ParseMetadata(metadata)
+                                        });
 
                                         // Increment the count
                                         state.Count++;
@@ -184,8 +181,7 @@ namespace StreamRipper
                         {
                             // Invoke on stream ended
                             state.EventHandlers.StreamEndedEventHandlers.Invoke(state, new StreamEndedEventArg());
-                            state.EventHandlers.StreamFailedHandlers.Invoke(state,
-                                new StreamFailedEventArg {Exception = e, Message = "Stream loop threw an exception"});
+                            state.EventHandlers.StreamFailedHandlers.Invoke(state, new StreamFailedEventArg {Exception = e, Message = "Stream loop threw an exception"});
                         }
                     }
                 }
@@ -193,8 +189,7 @@ namespace StreamRipper
             catch (Exception e)
             {
                 // Invoke on stream ended
-                state.EventHandlers.StreamFailedHandlers.Invoke(state,
-                    new StreamFailedEventArg {Exception = e, Message = "Stream threw an exception"});
+                state.EventHandlers.StreamFailedHandlers.Invoke(state, new StreamFailedEventArg {Exception = e, Message = "Stream threw an exception"});
             }
         }
 

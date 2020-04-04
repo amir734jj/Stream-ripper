@@ -6,9 +6,9 @@ namespace StreamRipper.Models.Song
 {
     public class SongInfo: IDisposable, ICloneable
     {
-        public SongMetadata SongMetadata { get; set; }
+        public SongMetadata SongMetadata { get; set; } = new SongMetadata();
         
-        public MemoryStream Stream { get; set; }
+        public MemoryStream Stream { get; set; } = new MemoryStream();
 
         /// <summary>
         /// Dispose self

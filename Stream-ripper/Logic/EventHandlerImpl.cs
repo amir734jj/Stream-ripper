@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using Microsoft.Extensions.Logging;
 using StreamRipper.Interfaces;
 using StreamRipper.Models.Events;
@@ -13,6 +12,9 @@ namespace StreamRipper.Logic
         public static readonly Action<EventState, MetadataChangedEventArg> MetadataChangedHandler = (state, arg) =>
         {
             state.Logger.LogTrace("MetadataChangedEventHandler invoked", arg);
+
+            // Set metadata
+            state.SongInfo.SongMetadata = arg.SongMetadata;
             
             // if count is greater than zero, ignore the first one
             if (state.Count <= 0) return;
@@ -30,7 +32,7 @@ namespace StreamRipper.Logic
         public static readonly Action<EventState, StreamUpdateEventArg> StreamUpdateEventHandler = async (state, arg) =>
         {
             state.Logger.LogTrace("StreamUpdateEventHandler invoked", arg);
-              
+
             // Append to MemoryStream
             await state.SongInfo.Stream.WriteAsync(arg.SongRawPartial, 0, arg.SongRawPartial.Length);
         };
@@ -40,12 +42,7 @@ namespace StreamRipper.Logic
             state.Logger.LogTrace("StreamStartedEventHandler invoked", arg);
             
             // Initialize the SongInfo
-            state.SongInfo = new SongInfo
-            {
-                // Empty properties
-                SongMetadata = new SongMetadata(),
-                Stream = new MemoryStream()
-            };
+            state.SongInfo = new SongInfo();
         };
         
         public static readonly Action<EventState, StreamEndedEventArg> StreamEndedEventHandler = (state, arg) =>

@@ -9,6 +9,7 @@ namespace StreamRipper.Models.State
         {
             Url = url;
             Logger = logger;
+            SongInfo = new SongInfo();
         }
 
         public string Url { get; }
