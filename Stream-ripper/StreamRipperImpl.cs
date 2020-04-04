@@ -55,11 +55,17 @@ namespace StreamRipper
         /// </summary>
         public void Start()
         {
+            if (_taskRef?.Status == TaskStatus.Running)
+            {
+                Dispose();
+            }
+
+            // Refresh cancellation token
             _cancellationToken = new CancellationTokenSource();
 
             var token = _cancellationToken.Token;
 
-            Task.Factory
+            _taskRef = Task.Factory
                 .StartNew(state => StreamHttpRadio((EventState) state, token), new EventState(_url.AbsoluteUri, _logger)
                 {
                     EventHandlers = new EventHandlers
@@ -72,6 +78,8 @@ namespace StreamRipper
                     }
                 }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
+
+        private Task _taskRef;
 
         /// <summary>
         /// Stream HTTP Radio
