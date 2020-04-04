@@ -1,6 +1,8 @@
-﻿namespace StreamRipper.Models.Events
+﻿using StreamRipper.Interfaces;
+
+namespace StreamRipper.Models.Events
 {
-    public class StreamEndedEventArg
+    public class StreamEndedEventArg : IEvent
     {
 
     }

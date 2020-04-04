@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace StreamRipper.Models
+namespace StreamRipper.Models.Song
 {
     /// <summary>
     /// Song metadata model

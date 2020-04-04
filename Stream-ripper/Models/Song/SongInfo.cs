@@ -2,7 +2,7 @@
 using System.IO;
 using StreamRipper.Extensions;
 
-namespace StreamRipper.Models
+namespace StreamRipper.Models.Song
 {
     public class SongInfo: IDisposable, ICloneable
     {

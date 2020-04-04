@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using StreamRipper.Constants;
 using StreamRipper.Models;
+using StreamRipper.Models.Song;
 
 namespace StreamRipper.Utilities
 {

@@ -1,68 +1,27 @@
 ﻿using System;
-using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using StreamRipper.Interfaces;
-using StreamRipper.Models;
 using StreamRipper.Models.Events;
+using StreamRipper.Models.State;
 using StreamRipper.Utilities;
+using static StreamRipper.Logic.EventHandlerImpl;
 
 namespace StreamRipper
 {
     public class StreamRipperImpl : IStreamRipper
     {
         /// <summary>
-        /// Metadata updated event handlers
-        /// </summary>
-        public EventHandler<MetadataChangedEventArg> MetadataEventHandlers { get; set;}
-
-        /// <summary>
-        /// Stream updated event handlers
-        /// </summary>
-        public EventHandler<StreamUpdateEventArg> StreamUpdateEventHandlers { get; set; }
-        
-        /// <summary>
-        /// Stream started event handlers
-        /// </summary>
-        public EventHandler<StreamStartedEventArg> StreamStartedEventHandlers { get; set; }
-        
-        /// <summary>
-        /// Stream ended event handlers
-        /// </summary>
-        public EventHandler<StreamEndedEventArg> StreamEndedEventHandlers { get; set; }
-        
-        /// <summary>
-        /// Song change event handlers
-        /// </summary>
-        public EventHandler<SongChangedEventArg> SongChangedEventHandlers { get; set; }
-
-        /// <summary>
-        /// Exception handler
-        /// </summary>
-        public EventHandler<StreamFailedEventArg> StreamFailedHandlers { get; set; }
-
-        /// <summary>
-        /// Url to stream
-        /// </summary>
-        private readonly string _url;
-
-        /// <summary>
         /// Flag to indicate whether task is running or not
         /// </summary>
         private CancellationTokenSource _cancellationToken;
 
-        /// <summary>
-        /// Count of songs, ripped so far
-        /// </summary>
-        private decimal _count;
-        
-        /// <summary>
-        /// SongInfo reference
-        /// </summary>
-        private SongInfo _songInfo;
+        private readonly Uri _url;
+
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Constructor
@@ -71,63 +30,25 @@ namespace StreamRipper
         /// <param name="logger"></param>
         public StreamRipperImpl(Uri url, ILogger logger)
         {
-            _url = url.AbsoluteUri;
+            _url = url;
 
-            SongChangedEventHandlers = (_, arg) =>
-            {
-                logger.LogTrace("SongChangedEventHandlers invoked", arg);
-            };
+            _logger = logger;
 
-            StreamEndedEventHandlers += (_, arg) =>
-            {
-                logger.LogTrace("StreamEndedEventHandlers invoked", arg);
-            };
-            
-            StreamStartedEventHandlers += (_, arg) =>
-            {
-                logger.LogTrace("StreamStartedEventHandlers invoked", arg);
-
-                // Initialize the SongInfo
-                _songInfo = new SongInfo
-                {
-                    // Empty properties
-                    SongMetadata = new SongMetadata(),
-                    Stream = new MemoryStream()
-                };
-            };
-
-            StreamUpdateEventHandlers += (_, arg) =>
-            {
-                logger.LogTrace("StreamUpdateEventHandlers invoked", arg);
-                
-                // Append to MemoryStream
-                _songInfo.Stream.Write(arg.SongRawPartial, 0, arg.SongRawPartial.Length);
-            };
-
-            MetadataEventHandlers += (_, arg) =>
-            {
-                logger.LogTrace("MetadataEventHandlers invoked", arg);
-                
-                // if count is greater than zero, ignore the first one
-                if (_count > 0)
-                {
-                    SongChangedEventHandlers.Invoke(this, new SongChangedEventArg
-                    {
-                        // Clone SongInfo
-                        SongInfo = (SongInfo) _songInfo.Clone()
-                    });
-
-                    // Clean the buffer
-                    _songInfo.Dispose();
-                }
-                
-                // Set the metadata
-                _songInfo.SongMetadata = arg.SongMetadata;
-            };
-            
             // Initialize
             _cancellationToken = new CancellationTokenSource();
         }
+
+        public EventHandler<MetadataChangedEventArg> MetadataChangedHandlers { get; set; }
+
+        public EventHandler<StreamUpdateEventArg> StreamUpdateEventHandlers { get; set; }
+
+        public EventHandler<StreamStartedEventArg> StreamStartedEventHandlers { get; set; }
+
+        public EventHandler<StreamEndedEventArg> StreamEndedEventHandlers { get; set; }
+
+        public EventHandler<SongChangedEventArg> SongChangedEventHandlers { get; set; }
+
+        public EventHandler<StreamFailedEventArg> StreamFailedHandlers { get; set; }
 
         /// <summary>
         /// Start the streaming in async fashion
@@ -136,21 +57,30 @@ namespace StreamRipper
         {
             _cancellationToken = new CancellationTokenSource();
 
-            Task.Factory.StartNew(StreamHttpRadio,
-                _cancellationToken.Token,
-                TaskCreationOptions.LongRunning,
-                TaskScheduler.Default
-            );
+            var token = _cancellationToken.Token;
+
+            Task.Factory
+                .StartNew(state => StreamHttpRadio((EventState) state, token), new EventState(_url.AbsoluteUri, _logger)
+                {
+                    EventHandlers = new EventHandlers
+                    {
+                        SongChangedEventHandlers = TypedHandler(SongChangedEventHandler) + SongChangedEventHandlers,
+                        StreamEndedEventHandlers = TypedHandler(StreamEndedEventHandler) + StreamEndedEventHandlers,
+                        StreamStartedEventHandlers = TypedHandler(StreamStartedEventHandler) + StreamStartedEventHandlers,
+                        StreamUpdateEventHandlers = TypedHandler(StreamUpdateEventHandler) + StreamUpdateEventHandlers,
+                        MetadataChangedHandlers = TypedHandler(MetadataChangedHandler) + MetadataChangedHandlers
+                    }
+                }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
         /// <summary>
         /// Stream HTTP Radio
         /// </summary>
-        private void StreamHttpRadio()
+        private static void StreamHttpRadio(EventState state, CancellationToken token)
         {
             try
             {
-                var request = (HttpWebRequest) WebRequest.Create(_url);
+                var request = (HttpWebRequest) WebRequest.Create(state.Url);
                 request.Headers.Add("icy-metadata", "1");
                 request.ReadWriteTimeout = 10 * 1000;
                 request.Timeout = 10 * 1000;
@@ -158,7 +88,7 @@ namespace StreamRipper
                 using (var response = (HttpWebResponse) request.GetResponse())
                 {
                     // Trigger on stream started
-                    StreamStartedEventHandlers.Invoke(this, new StreamStartedEventArg());
+                    state.EventHandlers.StreamStartedEventHandlers.Invoke(state, new StreamStartedEventArg());
 
                     // Get the position of metadata
                     var metaInt = 0;
@@ -179,7 +109,7 @@ namespace StreamRipper
                             var metadataSb = new StringBuilder();
 
                             // Loop forever
-                            while (!_cancellationToken.IsCancellationRequested)
+                            while (!token.IsCancellationRequested)
                             {
                                 if (bufferPosition >= readBytes)
                                 {
@@ -194,7 +124,8 @@ namespace StreamRipper
                                 if (readBytes <= 0)
                                 {
                                     // Stream ended
-                                    StreamEndedEventHandlers.Invoke(this, new StreamEndedEventArg());
+                                    state.EventHandlers.StreamEndedEventHandlers.Invoke(state,
+                                        new StreamEndedEventArg());
                                     break;
                                 }
 
@@ -203,18 +134,19 @@ namespace StreamRipper
                                     if (metaInt == 0 || streamPosition + readBytes - bufferPosition <= metaInt)
                                     {
                                         streamPosition += readBytes - bufferPosition;
-                                        ProcessStreamData(buffer, ref bufferPosition, readBytes - bufferPosition);
+                                        ProcessStreamData(state, buffer, ref bufferPosition,
+                                            readBytes - bufferPosition);
                                         continue;
                                     }
 
-                                    ProcessStreamData(buffer, ref bufferPosition, metaInt - streamPosition);
+                                    ProcessStreamData(state, buffer, ref bufferPosition, metaInt - streamPosition);
                                     metadataLength = Convert.ToInt32(buffer[bufferPosition++]) * 16;
 
                                     // Check if there's any metadata, otherwise skip to next block
                                     if (metadataLength == 0)
                                     {
                                         streamPosition = Math.Min(readBytes - bufferPosition, metaInt);
-                                        ProcessStreamData(buffer, ref bufferPosition, streamPosition);
+                                        ProcessStreamData(state, buffer, ref bufferPosition, streamPosition);
                                         continue;
                                     }
                                 }
@@ -230,16 +162,17 @@ namespace StreamRipper
                                     {
                                         var metadata = metadataSb.ToString();
                                         streamPosition = Math.Min(readBytes - bufferPosition, metaInt);
-                                        ProcessStreamData(buffer, ref bufferPosition, streamPosition);
+                                        ProcessStreamData(state, buffer, ref bufferPosition, streamPosition);
 
                                         // Trigger song change event
-                                        MetadataEventHandlers.Invoke(this, new MetadataChangedEventArg
-                                        {
-                                            SongMetadata = MetadataUtility.ParseMetadata(metadata)
-                                        });
+                                        state.EventHandlers.MetadataChangedHandlers.Invoke(state,
+                                            new MetadataChangedEventArg
+                                            {
+                                                SongMetadata = MetadataUtility.ParseMetadata(metadata)
+                                            });
 
                                         // Increment the count
-                                        _count++;
+                                        state.Count++;
 
                                         metadataSb.Clear();
                                         break;
@@ -250,9 +183,9 @@ namespace StreamRipper
                         catch (Exception e)
                         {
                             // Invoke on stream ended
-                            StreamEndedEventHandlers.Invoke(this, new StreamEndedEventArg());
-                            StreamFailedHandlers.Invoke(this, new StreamFailedEventArg {Exception = e});
-                            Console.WriteLine(e.Message);
+                            state.EventHandlers.StreamEndedEventHandlers.Invoke(state, new StreamEndedEventArg());
+                            state.EventHandlers.StreamFailedHandlers.Invoke(state,
+                                new StreamFailedEventArg {Exception = e, Message = "Stream loop threw an exception"});
                         }
                     }
                 }
@@ -260,18 +193,19 @@ namespace StreamRipper
             catch (Exception e)
             {
                 // Invoke on stream ended
-                StreamFailedHandlers.Invoke(this, new StreamFailedEventArg {Exception = e});
-                Console.WriteLine(e.Message);
+                state.EventHandlers.StreamFailedHandlers.Invoke(state,
+                    new StreamFailedEventArg {Exception = e, Message = "Stream threw an exception"});
             }
         }
 
         /// <summary>
         /// Process the stream
         /// </summary>
+        /// <param name="state"></param>
         /// <param name="buffer"></param>
         /// <param name="offset"></param>
         /// <param name="length"></param>
-        private void ProcessStreamData(byte[] buffer, ref int offset, int length)
+        private static void ProcessStreamData(EventState state, byte[] buffer, ref int offset, int length)
         {
             if (length < 1)
             {
@@ -282,7 +216,7 @@ namespace StreamRipper
             Buffer.BlockCopy(buffer, offset, data, 0, length);
 
             // Trigger update
-            StreamUpdateEventHandlers.Invoke(this, new StreamUpdateEventArg
+            state.EventHandlers.StreamUpdateEventHandlers.Invoke(state, new StreamUpdateEventArg
             {
                 SongRawPartial = data
             });

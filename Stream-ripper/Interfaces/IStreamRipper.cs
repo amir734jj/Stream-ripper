@@ -5,7 +5,7 @@ namespace StreamRipper.Interfaces
 {
     public interface IStreamRipper: IDisposable
     {        
-        EventHandler<MetadataChangedEventArg> MetadataEventHandlers { get; set; }
+        EventHandler<MetadataChangedEventArg> MetadataChangedHandlers { get; set; }
         
         EventHandler<StreamUpdateEventArg> StreamUpdateEventHandlers { get; set; }
         
