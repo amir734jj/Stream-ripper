@@ -27,5 +27,10 @@ namespace StreamRipper.Models.Song
             SongMetadata = (SongMetadata) SongMetadata?.Clone(),
             Stream = Stream?.Clone().Result
         };
+
+        public override string ToString()
+        {
+            return SongMetadata?.ToString();
+        }
     }
 }

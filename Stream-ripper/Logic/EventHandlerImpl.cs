@@ -9,21 +9,35 @@ namespace StreamRipper.Logic
 {
     public static class EventHandlerImpl
     {
-        public static readonly Action<EventState, MetadataChangedEventArg> MetadataChangedHandler = (state, arg) =>
+        public static readonly Action<EventState, MetadataChangedEventArg> MetadataChangedHandler = async (state, arg) =>
         {
             state.Logger.LogTrace("MetadataChangedEventHandler invoked", arg);
 
             // Set metadata
             state.SongInfo.SongMetadata = arg.SongMetadata;
-            
-            // if count is greater than zero, ignore the first one
-            if (state.Count <= 0) return;
 
+            // if count is greater than zero, ignore the first one
+            if (state.Count <= 0)
+            {
+                // Clone to avoid un-intentional modification by reference
+                state.PrevSongMetadata = (SongMetadata) state.SongInfo.SongMetadata.Clone();
+
+                return;
+            }
+
+            // Always yield the previous metadata
             state.EventHandlers.SongChangedEventHandlers.Invoke(state, new SongChangedEventArg
             {
                 // Clone SongInfo
-                SongInfo = (SongInfo) state.SongInfo.Clone()
+                SongInfo = (SongInfo) new SongInfo
+                {
+                    SongMetadata = state.PrevSongMetadata,
+                    Stream = state.SongInfo.Stream
+                }.Clone()
             });
+
+            // Clone to avoid un-intentional modification by reference
+            state.PrevSongMetadata = (SongMetadata) state.SongInfo.SongMetadata.Clone();
 
             // Clean the buffer
             state.SongInfo.Dispose();

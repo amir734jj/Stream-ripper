@@ -21,5 +21,7 @@ namespace StreamRipper.Models.State
         public int Count { get; set; }
 
         public EventHandlers EventHandlers { get; set; }
+
+        public SongMetadata PrevSongMetadata { get; set; }
     }
 }

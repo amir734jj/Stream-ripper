@@ -23,5 +23,10 @@ namespace StreamRipper.Models.Song
             Title = (string) Title.Clone(),
             Raw = (string) Raw.Clone()
         };
+
+        public override string ToString()
+        {
+            return $"{Artist}-{Title}";
+        }
     }
 }
