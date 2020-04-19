@@ -19,9 +19,9 @@ namespace StreamRipper.Models.Song
         /// <returns></returns>
         public object Clone() => new SongMetadata
         {
-            Artist = (string) Artist.Clone(),
-            Title = (string) Title.Clone(),
-            Raw = (string) Raw.Clone()
+            Artist = (string) Artist?.Clone(),
+            Title = (string) Title?.Clone(),
+            Raw = (string) Raw?.Clone()
         };
 
         public override string ToString()
