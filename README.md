@@ -11,7 +11,7 @@ var streamRipper = new StreamRipperImpl(new Uri("https://rj1.rjstream.com/"), lo
 streamRipper.SongChangedEventHandlers += async (_, arg) =>
 {
     // Create filename from SongInfo
-    var filename = $"{arg.SongInfo.SongMetadata.Artist}-{arg.SongInfo.SongMetadata.Title}";
+    var filename = $"{arg.SongInfo.SongMetadata}";
 
     // Save the stream to file
     await arg.SongInfo.Stream.ToFileStream($@"\Music\ripped\{filename}.mp3");
