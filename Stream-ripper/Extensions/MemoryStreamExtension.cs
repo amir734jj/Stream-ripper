@@ -22,8 +22,11 @@ namespace StreamRipper.Extensions
         public static async Task<MemoryStream> Clone(this MemoryStream source)
         {
             source.Seek(0, SeekOrigin.Begin);
+
             var destination = new MemoryStream();
+            
             await source.CopyToAsync(destination);
+            
             return destination;
         }
     }

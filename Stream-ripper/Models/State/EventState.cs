@@ -1,3 +1,4 @@
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using StreamRipper.Models.Song;
 
@@ -23,5 +24,9 @@ namespace StreamRipper.Models.State
         public EventHandlers EventHandlers { get; set; }
 
         public SongMetadata PrevSongMetadata { get; set; }
+        
+        public int MaxBufferSize { get; set; }
+
+        public CancellationTokenSource CancellationToken { get; set; }
     }
 }

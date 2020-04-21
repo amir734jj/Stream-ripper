@@ -5,7 +5,12 @@ Stream Ripper library, convert an online radio to your music library!
 [Nuget](https://www.nuget.org/packages/StreamRipper/)
 
 ```csharp
-var streamRipper = new StreamRipperImpl(new Uri("https://rj1.rjstream.com/"), logger);
+var streamRipper = new StreamRipperImpl(new StreamRipperOptions
+{
+    Url = new Uri("http://stream.radiojavan.com/radiojavan"),
+    Logger = serviceProvider.GetService<ILogger<IStreamRipper>>(),
+    MaxBufferSize = 10 * 1000000    // stop when buffer size passes 10 megabytes
+});
 
 // The recommended way is to have an async event handlers
 streamRipper.SongChangedEventHandlers += async (_, arg) =>

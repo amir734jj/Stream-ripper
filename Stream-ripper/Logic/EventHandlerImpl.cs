@@ -49,6 +49,14 @@ namespace StreamRipper.Logic
 
             // Append to MemoryStream
             await state.SongInfo.Stream.WriteAsync(arg.SongRawPartial, 0, arg.SongRawPartial.Length);
+
+            // Stop the stream as buffer as been reached
+            if (state.SongInfo.Stream.Length >= state.MaxBufferSize)
+            {
+                state.Logger.LogTrace("Buffer overflow. Signalling to stop stream", arg);
+
+                state.CancellationToken.Cancel();
+            }
         };
         
         public static readonly Action<EventState, StreamStartedEventArg> StreamStartedEventHandler = (state, arg) =>

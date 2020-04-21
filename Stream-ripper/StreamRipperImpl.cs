@@ -3,8 +3,8 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using StreamRipper.Interfaces;
+using StreamRipper.Models;
 using StreamRipper.Models.Events;
 using StreamRipper.Models.State;
 using StreamRipper.Utilities;
@@ -19,20 +19,15 @@ namespace StreamRipper
         /// </summary>
         private CancellationTokenSource _cancellationToken;
 
-        private readonly Uri _url;
-
-        private readonly ILogger _logger;
+        private readonly StreamRipperOptions _options;
 
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="url"></param>
-        /// <param name="logger"></param>
-        public StreamRipperImpl(Uri url, ILogger logger)
+        /// <param name="options"></param>
+        public StreamRipperImpl(StreamRipperOptions options)
         {
-            _url = url;
-
-            _logger = logger;
+            _options = options.Validate();
 
             // Initialize
             _cancellationToken = new CancellationTokenSource();
@@ -66,8 +61,10 @@ namespace StreamRipper
             var token = _cancellationToken.Token;
 
             _taskRef = Task.Factory
-                .StartNew(state => StreamHttpRadio((EventState) state, token), new EventState(_url.AbsoluteUri, _logger)
+                .StartNew(state => StreamHttpRadio((EventState) state, token), new EventState(_options.Url.AbsoluteUri, _options.Logger)
                 {
+                    MaxBufferSize = _options.MaxBufferSize,
+                    CancellationToken = _cancellationToken,
                     EventHandlers = new EventHandlers
                     {
                         SongChangedEventHandlers = TypedHandler(SongChangedEventHandler) + SongChangedEventHandlers,
@@ -100,6 +97,7 @@ namespace StreamRipper
 
                     // Get the position of metadata
                     var metaInt = 0;
+
                     if (!string.IsNullOrEmpty(response.GetResponseHeader("icy-metaint")))
                     {
                         metaInt = Convert.ToInt32(response.GetResponseHeader("icy-metaint"));
