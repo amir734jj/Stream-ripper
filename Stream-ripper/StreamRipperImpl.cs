@@ -25,12 +25,22 @@ namespace StreamRipper
         /// Constructor
         /// </summary>
         /// <param name="options"></param>
-        public StreamRipperImpl(StreamRipperOptions options)
+        private StreamRipperImpl(StreamRipperOptions options)
         {
             _options = options.Validate();
 
             // Initialize
             _cancellationToken = new CancellationTokenSource();
+        }
+
+        /// <summary>
+        /// Static constructor
+        /// </summary>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static IStreamRipper New(StreamRipperOptions options)
+        {
+            return new StreamRipperImpl(options);
         }
 
         public EventHandler<MetadataChangedEventArg> MetadataChangedHandlers { get; set; }
@@ -71,7 +81,8 @@ namespace StreamRipper
                         StreamEndedEventHandlers = TypedHandler(StreamEndedEventHandler) + StreamEndedEventHandlers,
                         StreamStartedEventHandlers = TypedHandler(StreamStartedEventHandler) + StreamStartedEventHandlers,
                         StreamUpdateEventHandlers = TypedHandler(StreamUpdateEventHandler) + StreamUpdateEventHandlers,
-                        MetadataChangedHandlers = TypedHandler(MetadataChangedHandler) + MetadataChangedHandlers
+                        MetadataChangedHandlers = TypedHandler(MetadataChangedHandler) + MetadataChangedHandlers,
+                        StreamFailedHandlers = TypedHandler(StreamFailedEventHandler) + StreamFailedHandlers
                     }
                 }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
@@ -214,6 +225,7 @@ namespace StreamRipper
             }
 
             var data = new byte[length];
+
             Buffer.BlockCopy(buffer, offset, data, 0, length);
 
             // Trigger update

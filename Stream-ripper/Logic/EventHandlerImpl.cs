@@ -9,7 +9,7 @@ namespace StreamRipper.Logic
 {
     public static class EventHandlerImpl
     {
-        public static readonly Action<EventState, MetadataChangedEventArg> MetadataChangedHandler = async (state, arg) =>
+        public static readonly Action<EventState, MetadataChangedEventArg> MetadataChangedHandler = (state, arg) =>
         {
             state.Logger.LogTrace("MetadataChangedEventHandler invoked", arg);
 
@@ -53,9 +53,13 @@ namespace StreamRipper.Logic
             // Stop the stream as buffer as been reached
             if (state.SongInfo.Stream.Length >= state.MaxBufferSize)
             {
-                state.Logger.LogTrace("Buffer overflow. Signalling to stop stream", arg);
+                const string bufferOverflowErrMsg = "Buffer overflow. Signalling to stop stream";
 
-                state.CancellationToken.Cancel();
+                state.EventHandlers.StreamFailedHandlers.Invoke(state, new StreamFailedEventArg
+                {
+                    Exception = new Exception(bufferOverflowErrMsg),
+                    Message = bufferOverflowErrMsg
+                });
             }
         };
         
@@ -79,7 +83,10 @@ namespace StreamRipper.Logic
         
         public static readonly Action<EventState, StreamFailedEventArg> StreamFailedEventHandler = (state, arg) =>
         {
-            state.Logger.LogTrace("StreamFailedEventHandler invoked", arg);
+            state.Logger.LogError("StreamFailedEventHandler invoked", arg.Exception);
+
+            // Stop the stream
+            state.CancellationToken.Cancel();
         };
 
         public static EventHandler<T> TypedHandler<T>(Action<EventState, T> handler) where T: IEvent

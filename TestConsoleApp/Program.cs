@@ -17,7 +17,7 @@ namespace TestConsoleApp
                 .Configure<LoggerFilterOptions>(cfg => cfg.MinLevel = LogLevel.Trace)
                 .BuildServiceProvider();
 
-            var stream = new StreamRipperImpl(new StreamRipperOptions
+            var stream = StreamRipperImpl.New(new StreamRipperOptions
             {
                 Url = new Uri("http://stream.radiojavan.com/radiojavan"),
                 Logger = serviceProvider.GetService<ILogger<IStreamRipper>>(),
