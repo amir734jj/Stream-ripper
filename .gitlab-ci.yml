@@ -20,7 +20,7 @@ nuget:
   variables: 
     
   script:
-    - mkdir scripts 
+    - mkdir scripts
       && cd scripts
       && wget "https://raw.githubusercontent.com/amir734jj/resolve-nuget-version/master/app.py"
       && cd ../
