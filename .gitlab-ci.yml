@@ -13,7 +13,7 @@ build:
 nuget:
   tags:
   - docker
-  image: microsoft/dotnet:2.1-sdk
+  image: mcr.microsoft.com/dotnet/core/sdk
   stage: nuget
   only:
     - nuget
