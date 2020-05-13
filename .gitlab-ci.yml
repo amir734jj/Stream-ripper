@@ -5,7 +5,7 @@ stages:
 build:
   tags:
   - docker
-  image: microsoft/dotnet:2.1-sdk
+  image: mcr.microsoft.com/dotnet/core/sdk
   stage: build
   script:
     - dotnet build -c Release
