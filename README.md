@@ -1,8 +1,9 @@
 # Stream-ripper
 
-Stream Ripper library, convert an online radio to your music library!
+Stream Ripper library, convert an online radio (IceCast stream) to your music library!
 
-[Nuget](https://www.nuget.org/packages/StreamRipper/)
+[![NuGet Status](https://img.shields.io/nuget/v/StreamRipper.svg)](https://www.nuget.org/packages/StreamRipper/)
+
 
 ```csharp
 var streamRipper = StreamRipperFactory.New(new StreamRipperOptions
