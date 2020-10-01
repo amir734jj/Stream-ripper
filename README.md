@@ -2,6 +2,8 @@
 
 Stream Ripper library, convert an online radio (IceCast stream) to your music library!
 
+Basically, extract mp3 with metadata from an IceCast stream URL. See this NuGet library [in action](https://stream-subscription-ui.herokuapp.com/#/about)
+
 [![NuGet Status](https://img.shields.io/nuget/v/StreamRipper.svg)](https://www.nuget.org/packages/StreamRipper/)
 
 
@@ -39,4 +41,3 @@ Events:
 
 Notes:
   - All event handler will be automatically wrapped as async event handler by `PlugginManager`
-  - This NuGet library in action: https://stream-subscription-ui.herokuapp.com/#/about
