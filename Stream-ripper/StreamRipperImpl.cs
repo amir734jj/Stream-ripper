@@ -12,7 +12,7 @@ using static StreamRipper.Logic.EventHandlerImpl;
 
 namespace StreamRipper
 {
-    public class StreamRipperImpl : IStreamRipper
+    internal class StreamRipperImpl : IStreamRipper
     {
         /// <summary>
         /// Flag to indicate whether task is running or not
@@ -25,22 +25,12 @@ namespace StreamRipper
         /// Constructor
         /// </summary>
         /// <param name="options"></param>
-        private StreamRipperImpl(StreamRipperOptions options)
+        public StreamRipperImpl(StreamRipperOptions options)
         {
             _options = options.Validate();
 
             // Initialize
             _cancellationToken = new CancellationTokenSource();
-        }
-
-        /// <summary>
-        /// Static constructor
-        /// </summary>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        public static IStreamRipper New(StreamRipperOptions options)
-        {
-            return new StreamRipperImpl(options);
         }
 
         public EventHandler<MetadataChangedEventArg> MetadataChangedHandlers { get; set; }

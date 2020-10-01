@@ -5,7 +5,7 @@ Stream Ripper library, convert an online radio to your music library!
 [Nuget](https://www.nuget.org/packages/StreamRipper/)
 
 ```csharp
-var streamRipper = StreamRipperImpl.New(new StreamRipperOptions
+var streamRipper = StreamRipperFactory.New(new StreamRipperOptions
 {
     Url = new Uri("http://stream.radiojavan.com/radiojavan"),
     Logger = serviceProvider.GetService<ILogger<IStreamRipper>>(),
