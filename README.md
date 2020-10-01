@@ -39,3 +39,4 @@ Events:
 
 Notes:
   - All event handler will be automatically wrapped as async event handler by `PlugginManager`
+  - This NuGet library in action: https://stream-subscription-ui.herokuapp.com/#/about
