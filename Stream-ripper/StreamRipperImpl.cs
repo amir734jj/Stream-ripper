@@ -3,6 +3,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using StreamRipper.Interfaces;
 using StreamRipper.Models;
 using StreamRipper.Models.Events;
@@ -14,6 +15,8 @@ namespace StreamRipper
 {
     internal class StreamRipperImpl : IStreamRipper
     {
+        private readonly ILogger _logger;
+
         /// <summary>
         /// Flag to indicate whether task is running or not
         /// </summary>
@@ -25,8 +28,10 @@ namespace StreamRipper
         /// Constructor
         /// </summary>
         /// <param name="options"></param>
-        public StreamRipperImpl(StreamRipperOptions options)
+        /// <param name="logger"></param>
+        public StreamRipperImpl(StreamRipperOptions options, ILogger logger)
         {
+            _logger = logger;
             _options = options.Validate();
 
             // Initialize
@@ -61,7 +66,7 @@ namespace StreamRipper
             var token = _cancellationToken.Token;
 
             _taskRef = Task.Factory
-                .StartNew(state => StreamHttpRadio((EventState) state, token), new EventState(_options.Url.AbsoluteUri, _options.Logger)
+                .StartNew(state => StreamHttpRadio((EventState) state, token), new EventState(_options.Url.AbsoluteUri, _logger)
                 {
                     MaxBufferSize = _options.MaxBufferSize,
                     CancellationToken = _cancellationToken,

@@ -1,7 +1,5 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace StreamRipper.Models
 {
@@ -9,8 +7,6 @@ namespace StreamRipper.Models
     {
         [Required]
         public Uri Url { get; set; }
-
-        public ILogger Logger { get; set; } = NullLogger.Instance;
 
         /// <summary>
         ///     Length of stream in bytes
