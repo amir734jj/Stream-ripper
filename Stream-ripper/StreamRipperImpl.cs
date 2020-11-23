@@ -113,7 +113,7 @@ namespace StreamRipper
                     {
                         try
                         {
-                            var buffer = new byte[16384];
+                            var buffer = new byte[(uint) Math.Pow(2, 14)];
                             var metadataLength = 0;
                             var streamPosition = 0;
                             var bufferPosition = 0;
