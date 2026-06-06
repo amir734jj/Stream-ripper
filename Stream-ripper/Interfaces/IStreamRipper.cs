@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using StreamRipper.Models.Events;
 
 namespace StreamRipper.Interfaces
@@ -16,6 +17,8 @@ namespace StreamRipper.Interfaces
         EventHandler<SongChangedEventArg> SongChangedEventHandlers { get; set; }
         
         EventHandler<StreamFailedEventArg> StreamFailedHandlers { get; set; }
+        
+        Task<bool> CheckUrlValidAsync();
         
         void Start();
     }

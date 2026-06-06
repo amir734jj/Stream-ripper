@@ -1,5 +1,6 @@
 ﻿using System;
-using System.Net;
+using System.IO;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +16,11 @@ namespace StreamRipper
 {
     internal class StreamRipperImpl : IStreamRipper
     {
+        private static readonly HttpClient _httpClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(10)
+        };
+
         private readonly ILogger _logger;
 
         /// <summary>
@@ -61,12 +67,12 @@ namespace StreamRipper
             }
 
             // Refresh cancellation token
+            _cancellationToken?.Dispose();
             _cancellationToken = new CancellationTokenSource();
 
             var token = _cancellationToken.Token;
 
-            _taskRef = Task.Factory
-                .StartNew(state => StreamHttpRadio((EventState) state, token), new EventState(_options.Url.AbsoluteUri, _logger)
+            _taskRef = Task.Run(() => StreamHttpRadioAsync(new EventState(_options.Url.AbsoluteUri, _logger)
                 {
                     MaxBufferSize = _options.MaxBufferSize,
                     CancellationToken = _cancellationToken,
@@ -79,7 +85,7 @@ namespace StreamRipper
                         MetadataChangedHandlers = TypedHandler(MetadataChangedHandler) + MetadataChangedHandlers,
                         StreamFailedHandlers = TypedHandler(StreamFailedEventHandler) + StreamFailedHandlers
                     }
-                }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+                }, token), token);
         }
 
         private Task _taskRef;
@@ -87,113 +93,123 @@ namespace StreamRipper
         /// <summary>
         /// Stream HTTP Radio
         /// </summary>
-        private static void StreamHttpRadio(EventState state, CancellationToken token)
+        private static async Task StreamHttpRadioAsync(EventState state, CancellationToken token)
         {
             try
             {
-                var request = (HttpWebRequest) WebRequest.Create(state.Url);
-                request.Headers.Add("icy-metadata", "1");
-                request.ReadWriteTimeout = 10 * 1000;
-                request.Timeout = 10 * 1000;
-
-                using (var response = (HttpWebResponse) request.GetResponse())
+                using (var request = new HttpRequestMessage(HttpMethod.Get, state.Url))
                 {
-                    // Trigger on stream started
-                    state.EventHandlers.StreamStartedEventHandlers.Invoke(state, new StreamStartedEventArg());
+                    request.Headers.Add("icy-metadata", "1");
 
-                    // Get the position of metadata
-                    var metaInt = 0;
-
-                    if (!string.IsNullOrEmpty(response.GetResponseHeader("icy-metaint")))
+                    using (var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token))
                     {
-                        metaInt = Convert.ToInt32(response.GetResponseHeader("icy-metaint"));
-                    }
+                        // Trigger on stream started
+                        state.EventHandlers.StreamStartedEventHandlers.Invoke(state, new StreamStartedEventArg());
 
-                    using (var socketStream = response.GetResponseStream())
-                    {
-                        try
+                        // Get the position of metadata
+                        var metaInt = 0;
+
+                        if (response.Headers.TryGetValues("icy-metaint", out var icyValues))
                         {
-                            var buffer = new byte[(uint) Math.Pow(2, 14)];
-                            var metadataLength = 0;
-                            var streamPosition = 0;
-                            var bufferPosition = 0;
-                            var readBytes = 0;
-                            var metadataSb = new StringBuilder();
+                            metaInt = Convert.ToInt32(string.Join("", icyValues));
+                        }
 
-                            // Loop forever
-                            while (!token.IsCancellationRequested)
+                        using (var socketStream = await response.Content.ReadAsStreamAsync())
+                        {
+                            try
                             {
-                                if (bufferPosition >= readBytes)
+                                var buffer = new byte[(uint) Math.Pow(2, 14)];
+                                var metadataLength = 0;
+                                var streamPosition = 0;
+                                var bufferPosition = 0;
+                                var readBytes = 0;
+                                var metadataSb = new StringBuilder();
+
+                                // Loop forever
+                                while (!token.IsCancellationRequested)
                                 {
-                                    if (socketStream != null)
+                                    if (bufferPosition >= readBytes)
                                     {
-                                        readBytes = socketStream.Read(buffer, 0, buffer.Length);
+                                        readBytes = await socketStream.ReadAsync(buffer, 0, buffer.Length, token);
+                                        bufferPosition = 0;
                                     }
 
-                                    bufferPosition = 0;
-                                }
-
-                                if (readBytes <= 0)
-                                {
-                                    // Stream ended
-                                    state.EventHandlers.StreamEndedEventHandlers.Invoke(state, new StreamEndedEventArg());
-                                    break;
-                                }
-
-                                if (metadataLength == 0)
-                                {
-                                    if (metaInt == 0 || streamPosition + readBytes - bufferPosition <= metaInt)
+                                    if (readBytes <= 0)
                                     {
-                                        streamPosition += readBytes - bufferPosition;
-                                        ProcessStreamData(state, buffer, ref bufferPosition, readBytes - bufferPosition);
-                                        continue;
-                                    }
-
-                                    ProcessStreamData(state, buffer, ref bufferPosition, metaInt - streamPosition);
-                                    metadataLength = Convert.ToInt32(buffer[bufferPosition++]) * 16;
-
-                                    // Check if there's any metadata, otherwise skip to next block
-                                    if (metadataLength == 0)
-                                    {
-                                        streamPosition = Math.Min(readBytes - bufferPosition, metaInt);
-                                        ProcessStreamData(state, buffer, ref bufferPosition, streamPosition);
-                                        continue;
-                                    }
-                                }
-
-                                // Get the metadata and reset the position
-                                while (bufferPosition < readBytes)
-                                {
-                                    metadataSb.Append(Convert.ToChar(buffer[bufferPosition++]));
-                                    metadataLength--;
-
-                                    // ReSharper disable once InvertIf
-                                    if (metadataLength == 0)
-                                    {
-                                        var metadata = metadataSb.ToString();
-                                        streamPosition = Math.Min(readBytes - bufferPosition, metaInt);
-                                        ProcessStreamData(state, buffer, ref bufferPosition, streamPosition);
-
-                                        // Trigger song change event
-                                        state.EventHandlers.MetadataChangedHandlers.Invoke(state, new MetadataChangedEventArg
-                                        {
-                                            SongMetadata = MetadataUtility.ParseMetadata(metadata)
-                                        });
-
-                                        // Increment the count
-                                        state.Count++;
-
-                                        metadataSb.Clear();
+                                        // Stream ended
+                                        state.EventHandlers.StreamEndedEventHandlers.Invoke(state, new StreamEndedEventArg());
                                         break;
+                                    }
+
+                                    if (metadataLength == 0)
+                                    {
+                                        if (metaInt == 0 || streamPosition + readBytes - bufferPosition <= metaInt)
+                                        {
+                                            streamPosition += readBytes - bufferPosition;
+                                            ProcessStreamData(state, buffer, ref bufferPosition, readBytes - bufferPosition);
+                                            continue;
+                                        }
+
+                                        ProcessStreamData(state, buffer, ref bufferPosition, metaInt - streamPosition);
+
+                                        // Refill buffer if exhausted before reading metadata length byte
+                                        if (bufferPosition >= readBytes)
+                                        {
+                                            readBytes = await socketStream.ReadAsync(buffer, 0, buffer.Length, token);
+                                            bufferPosition = 0;
+
+                                            if (readBytes <= 0)
+                                            {
+                                                state.EventHandlers.StreamEndedEventHandlers.Invoke(state, new StreamEndedEventArg());
+                                                break;
+                                            }
+                                        }
+
+                                        metadataLength = Convert.ToInt32(buffer[bufferPosition++]) * 16;
+
+                                        // Check if there's any metadata, otherwise skip to next block
+                                        if (metadataLength == 0)
+                                        {
+                                            streamPosition = Math.Min(readBytes - bufferPosition, metaInt);
+                                            ProcessStreamData(state, buffer, ref bufferPosition, streamPosition);
+                                            continue;
+                                        }
+                                    }
+
+                                    // Get the metadata and reset the position
+                                    while (bufferPosition < readBytes)
+                                    {
+                                        metadataSb.Append(Convert.ToChar(buffer[bufferPosition++]));
+                                        metadataLength--;
+
+                                        // ReSharper disable once InvertIf
+                                        if (metadataLength == 0)
+                                        {
+                                            var metadata = metadataSb.ToString();
+                                            streamPosition = Math.Min(readBytes - bufferPosition, metaInt);
+                                            ProcessStreamData(state, buffer, ref bufferPosition, streamPosition);
+
+                                            // Trigger song change event
+                                            state.EventHandlers.MetadataChangedHandlers.Invoke(state, new MetadataChangedEventArg
+                                            {
+                                                SongMetadata = MetadataUtility.ParseMetadata(metadata)
+                                            });
+
+                                            // Increment the count
+                                            state.Count++;
+
+                                            metadataSb.Clear();
+                                            break;
+                                        }
                                     }
                                 }
                             }
-                        }
-                        catch (Exception e)
-                        {
-                            // Invoke on stream ended
-                            state.EventHandlers.StreamEndedEventHandlers.Invoke(state, new StreamEndedEventArg());
-                            state.EventHandlers.StreamFailedHandlers.Invoke(state, new StreamFailedEventArg {Exception = e, Message = "Stream loop threw an exception"});
+                            catch (Exception e)
+                            {
+                                // Invoke on stream ended
+                                state.EventHandlers.StreamEndedEventHandlers.Invoke(state, new StreamEndedEventArg());
+                                state.EventHandlers.StreamFailedHandlers.Invoke(state, new StreamFailedEventArg {Exception = e, Message = "Stream loop threw an exception"});
+                            }
                         }
                     }
                 }
@@ -233,11 +249,42 @@ namespace StreamRipper
         }
 
         /// <summary>
+        /// Check if the stream URL is valid and returns an audio stream
+        /// </summary>
+        /// <returns>True if the URL responds with a valid audio stream</returns>
+        public async Task<bool> CheckUrlValidAsync()
+        {
+            try
+            {
+                using (var request = new HttpRequestMessage(HttpMethod.Get, _options.Url))
+                {
+                    request.Headers.Add("icy-metadata", "1");
+
+                    using (var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
+                    {
+                        var contentType = response.Content.Headers.ContentType?.MediaType ?? string.Empty;
+                        response.Headers.TryGetValues("icy-metaint", out var icyValues);
+                        var icyMetaInt = icyValues != null ? string.Join("", icyValues) : null;
+
+                        return response.IsSuccessStatusCode &&
+                               (contentType.Contains("audio") || !string.IsNullOrEmpty(icyMetaInt));
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning("Stream URL validation failed: {Message}", e.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Dispose the running task
         /// </summary>
         public void Dispose()
         {
             _cancellationToken.Cancel();
+            _cancellationToken.Dispose();
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Threading.Tasks;
 
 namespace StreamRipper.Extensions
 {
@@ -19,13 +18,13 @@ namespace StreamRipper.Extensions
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static async Task<MemoryStream> Clone(this MemoryStream source)
+        public static MemoryStream Clone(this MemoryStream source)
         {
             source.Seek(0, SeekOrigin.Begin);
 
             var destination = new MemoryStream();
             
-            await source.CopyToAsync(destination);
+            source.CopyTo(destination);
             
             return destination;
         }

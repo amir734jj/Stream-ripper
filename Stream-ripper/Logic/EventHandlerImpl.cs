@@ -43,12 +43,12 @@ namespace StreamRipper.Logic
             state.SongInfo.Dispose();
         };
         
-        public static readonly Action<EventState, StreamUpdateEventArg> StreamUpdateEventHandler = async (state, arg) =>
+        public static readonly Action<EventState, StreamUpdateEventArg> StreamUpdateEventHandler = (state, arg) =>
         {
             state.Logger.LogTrace("StreamUpdateEventHandler invoked", arg);
 
             // Append to MemoryStream
-            await state.SongInfo.Stream.WriteAsync(arg.SongRawPartial, 0, arg.SongRawPartial.Length);
+            state.SongInfo.Stream.Write(arg.SongRawPartial, 0, arg.SongRawPartial.Length);
 
             // Stop the stream as buffer as been reached
             if (state.SongInfo.Stream.Length >= state.MaxBufferSize)
