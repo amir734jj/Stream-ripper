@@ -27,6 +27,8 @@ namespace StreamRipper.Models.State
         
         public int MaxBufferSize { get; set; }
 
+        public bool MetadataOnly { get; set; }
+
         public CancellationTokenSource CancellationToken { get; set; }
     }
 }

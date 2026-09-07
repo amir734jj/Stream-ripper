@@ -14,6 +14,11 @@ namespace StreamRipper.Models
         public int MaxBufferSize { get; set; } = int.MaxValue;
 
         /// <summary>
+        ///     Stop the stream after the first ICY metadata block is read.
+        /// </summary>
+        public bool MetadataOnly { get; set; }
+
+        /// <summary>
         ///     Validate stream if valid or not
         /// </summary>
         /// <returns></returns>

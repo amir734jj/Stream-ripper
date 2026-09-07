@@ -75,6 +75,7 @@ namespace StreamRipper
             _taskRef = Task.Run(() => StreamHttpRadioAsync(new EventState(_options.Url.AbsoluteUri, _logger)
                 {
                     MaxBufferSize = _options.MaxBufferSize,
+                    MetadataOnly = _options.MetadataOnly,
                     CancellationToken = _cancellationToken,
                     EventHandlers = new EventHandlers
                     {
@@ -195,6 +196,12 @@ namespace StreamRipper
                                                 SongMetadata = MetadataUtility.ParseMetadata(metadata)
                                             });
 
+                                            if (state.MetadataOnly)
+                                            {
+                                                state.EventHandlers.StreamEndedEventHandlers.Invoke(state, new StreamEndedEventArg());
+                                                break;
+                                            }
+
                                             // Increment the count
                                             state.Count++;
 
@@ -232,6 +239,12 @@ namespace StreamRipper
         {
             if (length < 1)
             {
+                return;
+            }
+
+            if (state.MetadataOnly)
+            {
+                offset += length;
                 return;
             }
 
