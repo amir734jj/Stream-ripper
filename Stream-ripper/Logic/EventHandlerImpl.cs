@@ -83,7 +83,11 @@ namespace StreamRipper.Logic
         
         public static readonly Action<EventState, StreamFailedEventArg> StreamFailedEventHandler = (state, arg) =>
         {
-            state.Logger.LogError("StreamFailedEventHandler invoked", arg.Exception);
+            state.Logger.LogDebug(
+                arg.Exception,
+                "Stream failed for {StreamUrl}: {FailureMessage}",
+                state.Url,
+                arg.Message);
 
             // Stop the stream
             state.CancellationToken.Cancel();

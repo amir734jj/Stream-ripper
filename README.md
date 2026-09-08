@@ -11,7 +11,6 @@ Basically, extract mp3 with metadata from an IceCast stream URL. See this NuGet 
 var streamRipper = StreamRipperFactory.New(new StreamRipperOptions
 {
     Url = new Uri("http://stream.radiojavan.com/radiojavan"),
-    Logger = serviceProvider.GetService<ILogger<IStreamRipper>>(),
     MaxBufferSize = 10 * 1000000    // stop when buffer size passes 10 megabytes
 });
 
